@@ -15,7 +15,7 @@
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body { margin: 0; height: 100%; overflow: hidden; background: radial-gradient(ellipse at bottom, #12061a 0%, var(--bg) 60%); color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
     #app { position: fixed; inset: 0; }
-    canvas, #three { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+    canvas, #three, #heartCanvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
     #tulip-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transition: opacity 1.2s ease; }
     #tulip-stage.fade { opacity: 0; pointer-events: none; }
     #heart-stage { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease; pointer-events: none; background:#000; }
@@ -69,7 +69,11 @@
 
     let W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2);
     let startTime=0, animId, particles=[], transitioning=false;
-    let heartAnimId=null, heartStart=0, heartRows=[];
+    let heartAnimId=null, heartStart=0, heartRows=[], heartMeta=null;
+    let viewScale=1, viewRot=0;
+
+    const pointers = new Map();
+    let lastPinchDist=null, lastPinchAngle=null, lastDrag=null;
 
     function resizeAll(){
       W = window.innerWidth; H = window.innerHeight; dpr = Math.min(window.devicePixelRatio||1,2);
@@ -77,7 +81,7 @@
       tctx.setTransform(dpr,0,0,dpr,0,0);
       heartCanvas.width = Math.floor(W*dpr); heartCanvas.height = Math.floor(H*dpr);
       hctx.setTransform(dpr,0,0,dpr,0,0);
-      heartRows=[];
+      heartRows=[]; heartMeta=null;
     }
     window.addEventListener('resize', resizeAll, {passive:true});
 
@@ -177,39 +181,37 @@
       return (a*a*a - nx*nx*ny*ny*ny) <= 0;
     }
 
-    function heartXRangeAtY(ny, scale, cx){
+    function heartXRangeAtY(ny, scale){
       let minX=null, maxX=null;
       const maxR = scale*1.35;
       const step = 2;
-      for(let px = Math.floor(cx-maxR); px <= Math.ceil(cx+maxR); px+=step){
-        const nx = (px - cx)/scale;
+      for(let px = Math.floor(-maxR); px <= Math.ceil(maxR); px+=step){
+        const nx = px/scale;
         if(insideHeart2(nx, ny)){
           if(minX===null) minX=px;
           maxX=px;
         }
       }
-      // refine edges
-      if(minX!==null){ while(minX>cx-maxR && insideHeart2((minX-1-cx)/scale, ny)) minX--; }
-      if(maxX!==null){ while(maxX<cx+maxR && insideHeart2((maxX+1-cx)/scale, ny)) maxX++; }
+      if(minX!==null){ while(minX>-maxR && insideHeart2((minX-1)/scale, ny)) minX--; }
+      if(maxX!==null){ while(maxX<maxR && insideHeart2((maxX+1)/scale, ny)) maxX++; }
       return (minX!==null && maxX-minX>12) ? [minX,maxX] : null;
     }
 
     function buildHeartRows(){
       heartRows=[];
-      const scale = Math.min(W, H) * 0.44;
-      const cx = W/2, cy = H*0.53;
-      const fontSize = Math.max(10, Math.min(13, W*0.03));
+      const scale = Math.min(W, H) * 0.33; // smaller so full shape visible
+      const fontSize = Math.max(9, Math.min(12, W*0.028));
       const lineH = fontSize * 1.12;
       hctx.setTransform(dpr,0,0,dpr,0,0);
       hctx.font = `700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
       hctx.textBaseline='middle';
       const spaceW = hctx.measureText(' ').width;
-      const top = cy - scale*1.15;
-      const bottom = cy + scale*1.02;
+      const top = - scale*1.15;
+      const bottom = scale*1.02;
       let phraseIndex = 0;
       for(let y = top; y <= bottom; y += lineH){
-        const ny = - (y - cy) / scale;
-        const range = heartXRangeAtY(ny, scale, cx);
+        const ny = - y / scale;
+        const range = heartXRangeAtY(ny, scale);
         if(!range) continue;
         let [x1,x2] = range;
         x1 += 1; x2 -= 1;
@@ -219,19 +221,14 @@
         while(totalW < width + 20 && guard < 120){
           const w = PHRASES[idx % PHRASES.length];
           const ww = hctx.measureText(w).width;
-          if(words.length===0 || totalW + spaceW*0.4 + ww <= width + 40){
-            words.push(w);
-            totalW += (words.length>1?spaceW*0.4:0) + ww;
-          } else {
-            words.push(w); // ensure filled edge-to-edge
-            totalW += ww;
-          }
+          words.push(w);
+          totalW += (words.length>1?spaceW*0.4:0) + ww;
           idx++; guard++;
         }
         phraseIndex = (phraseIndex + 2) % PHRASES.length;
-        heartRows.push({x1,x2,y,width,words,lineH,fontSize,scale,cy});
+        heartRows.push({x1,x2,y,width,words,lineH,fontSize});
       }
-      return {scale,cy};
+      heartMeta = {scale,fontSize,lineH};
     }
 
     function drawJustifiedLine(words, x, y, width){
@@ -258,10 +255,16 @@
       hctx.fillRect(0,0,W,H);
 
       if(heartRows.length===0) buildHeartRows();
-      if(heartRows.length===0){ heartAnimId=requestAnimationFrame(drawHeartText); return; }
-      const {scale,cy} = heartRows[0];
+      if(heartRows.length===0 || !heartMeta){ heartAnimId=requestAnimationFrame(drawHeartText); return; }
+      const {scale} = heartMeta;
 
-      const baseGrad = hctx.createLinearGradient(0, cy-scale*1.2, 0, cy+scale*1.1);
+      // apply user transform (rotate/zoom)
+      hctx.save();
+      hctx.translate(W/2, H*0.5);
+      hctx.rotate(viewRot);
+      hctx.scale(viewScale, viewScale);
+
+      const baseGrad = hctx.createLinearGradient(0, -scale*1.2, 0, scale*1.1);
       baseGrad.addColorStop(0.00,'#e5e5e5');
       baseGrad.addColorStop(0.15,'#ff8fce');
       baseGrad.addColorStop(0.30,'#f8f8f8');
@@ -271,14 +274,18 @@
       baseGrad.addColorStop(0.90,'#ffffff');
       baseGrad.addColorStop(1.00,'#d8d8d8');
 
-      const period = W + H + 500;
-      const p = (elapsed * 0.16) % period;
-      const sx = p - H - 220;
-      const shineGrad = hctx.createLinearGradient(sx, 0, sx + 280, H);
+      // white metallic light pass from top to bottom every 5 seconds
+      const cycle = 5000;
+      const t = (elapsed % cycle) / cycle;
+      const topY = -scale*1.3;
+      const botY = scale*1.15;
+      const bandCenter = topY + t * (botY - topY + 120) - 60;
+      const bandH = scale * 0.35;
+      const shineGrad = hctx.createLinearGradient(0, bandCenter - bandH, 0, bandCenter + bandH);
       shineGrad.addColorStop(0.0,'rgba(255,255,255,0)');
-      shineGrad.addColorStop(0.43,'rgba(255,255,255,0)');
-      shineGrad.addColorStop(0.5,'rgba(255,255,255,0.95)');
-      shineGrad.addColorStop(0.57,'rgba(255,255,255,0)');
+      shineGrad.addColorStop(0.35,'rgba(255,255,255,0)');
+      shineGrad.addColorStop(0.5,'rgba(255,255,255,0.98)');
+      shineGrad.addColorStop(0.65,'rgba(255,255,255,0)');
       shineGrad.addColorStop(1.0,'rgba(255,255,255,0)');
 
       for(const row of heartRows){
@@ -297,14 +304,56 @@
         hctx.restore();
       }
 
+      hctx.restore();
       heartAnimId = requestAnimationFrame(drawHeartText);
     }
 
     function startHeart(){
       if(heartAnimId) cancelAnimationFrame(heartAnimId);
-      heartStart=0;
+      heartStart=0; heartRows=[]; heartMeta=null;
+      viewScale=1; viewRot=0;
       heartAnimId = requestAnimationFrame(drawHeartText);
     }
+
+    // interaction: rotate and zoom
+    function getPinchInfo(){
+      const pts = [...pointers.values()];
+      const dx = pts[0].x - pts[1].x, dy = pts[0].y - pts[1].y;
+      return { dist: Math.hypot(dx,dy), angle: Math.atan2(dy,dx) };
+    }
+    heartCanvas.addEventListener('pointerdown', (e)=>{
+      heartCanvas.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+      if(pointers.size===1){ lastDrag = {x:e.clientX, y:e.clientY}; }
+      if(pointers.size===2){ const info=getPinchInfo(); lastPinchDist=info.dist; lastPinchAngle=info.angle; }
+    });
+    heartCanvas.addEventListener('pointermove', (e)=>{
+      if(!pointers.has(e.pointerId)) return;
+      pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+      if(pointers.size===1 && lastDrag){
+        const dx = e.clientX - lastDrag.x;
+        viewRot += dx * 0.008;
+        lastDrag = {x:e.clientX, y:e.clientY};
+      } else if(pointers.size===2){
+        const info=getPinchInfo();
+        if(lastPinchDist){ viewScale *= info.dist/lastPinchDist; viewScale = Math.max(0.4, Math.min(6, viewScale)); }
+        if(lastPinchAngle!=null){ viewRot += (info.angle - lastPinchAngle); }
+        lastPinchDist=info.dist; lastPinchAngle=info.angle;
+      }
+    });
+    function endPointer(e){
+      pointers.delete(e.pointerId);
+      if(pointers.size<2){ lastPinchDist=null; lastPinchAngle=null; }
+      if(pointers.size===1){ const p=[...pointers.values()][0]; lastDrag={x:p.x,y:p.y}; }
+      if(pointers.size===0){ lastDrag=null; }
+    }
+    heartCanvas.addEventListener('pointerup', endPointer);
+    heartCanvas.addEventListener('pointercancel', endPointer);
+    heartCanvas.addEventListener('wheel', (e)=>{
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.08 : 0.92;
+      viewScale = Math.max(0.4, Math.min(6, viewScale*factor));
+    }, {passive:false});
 
     let transitionStart=0;
     function runSequence(){
@@ -340,9 +389,7 @@
     }
 
     repeatBtn.addEventListener('click', runSequence);
-
-    // adjust hint for 2D
-    hint.textContent = 'Hecho con amor';
+    hint.textContent = 'Girá y hacé zoom';
 
     resizeAll();
     runSequence();
