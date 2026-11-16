@@ -63,7 +63,7 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    const PHRASES = [[['Español','Te amo'],['Inglés','I love you'],['Francés','Je t’aime'],['Italiano','Ti amo'],['Portugués','Eu te amo'],['Alemán','Ich liebe dich'],['Neerlandés','Ik hou van je'],['Sueco','Jag älskar dig'],['Noruego','Jeg elsker deg'],['Danés','Jeg elsker dig'],['Finés','Rakastan sinua'],['Islandés','Ég elska þig'],['Polaco','Kocham cię'],['Checo','Miluji tě'],['Eslovaco','Ľúbim ťa'],['Húngaro','Szeretlek'],['Rumano','Te iubesc'],['Catalán','T’estimo'],['Gallego','Quérote'],['Euskera','Maite zaitut'],['Griego','Σ’ αγαπώ'],['Ruso','Я тебя люблю'],['Ucraniano','Я тебе кохаю'],['Búlgaro','Обичам те'],['Serbio','Волим те'],['Croata','Volim te'],['Esloveno','Ljubim te'],['Macedonio','Те сакам'],['Albanés','Të dua'],['Lituano','Myliu tave'],['Letón','Es tevi mīlu'],['Estonio','Ma armastan sind'],['Turco','Seni seviyorum'],['Árabe','أحبك'],['Hebreo','אני אוהב אותך'],['Persa','دوستت دارم'],['Hindi','मैं तुमसे प्यार करता हूँ'],['Bengalí','আমি তোমাকে ভালোবাসি'],['Urdu','میں تم سے محبت کرتا ہوں'],['Punyabí','ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ'],['Tamil','நான் உன்னை காதலிக்கிறேன்'],['Telugu','నేను నిన్ను ప్రేమిస్తున్నాను'],['Maratí','मी तुझ्यावर प्रेम करतो'],['Gujarati','હું તને પ્રેમ કરું છું'],['Canarés','ನಾನು ನಿನ್ನನ್ನು ಪ್ರೀತಿಸುತ್ತೇನೆ'],['Malayalam','ഞാൻ നിന്നെ സ്നേഹിക്കുന്നു'],['Chino','我爱你'],['Japonés','愛してる'],['Coreano','사랑해'],['Tailandés','ฉันรักคุณ'],['Vietnamita','Anh yêu em'],['Indonesio','Aku cinta kamu'],['Malayo','Saya cintakan awak'],['Filipino','Mahal kita'],['Javanés','Aku tresna sampeyan'],['Suajili','Nakupenda'],['Zulú','Ngiyakuthanda'],['Xhosa','Ndiyakuthanda'],['Afrikáans','Ek het jou lief'],['Amárico','እወድሃለሁ'],['Hausa','Ina son ki'],['Yoruba','Mo nifẹ rẹ'],['Igbo','A hụrụ m gị n’anya'],['Somalí','Waan ku jeclahay'],['Malagasy','Tiako ianao'],['Maltés','Inħobbok'],['Irlandés','Tá grá agam duit'],['Gaélico escocés','Tha gaol agam ort'],['Galés','Rwy’n dy garu di'],['Bretón','Da garout a ran'],['Latín','Te amo'],['Esperanto','Mi amas vin'],['Georgiano','მიყვარხარ'],['Armenio','Ես քեզ սիրում եմ'],['Azerí','Mən səni sevirəm'],['Kazajo','Мен сені жақсы көремін'],['Uzbeko','Men seni sevaman'],['Tayiko','Ман туро дӯст медорам'],['Kirguís','Мен сени сүйөм'],['Turcomano','Men seni söýýärin'],['Mongol','Би чамд хайртай'],['Nepalí','म तिमीलाई माया गर्छु'],['Cingalés','මම ඔයාට ආදරෙයි'],['Birmano','မင်းကိုချစ်တယ်'],['Jemer','ខ្ញុំស្រឡាញ់អ្នក'],['Lao','ຂ້ອຍຮັກເຈົ້າ'],['Pastún','زه تا سره مینه لرم'],['Kurdo','Ez te hez dikim'],['Yidis','איך האָב דיך ליב'],['Luxemburgués','Ech hunn dech gär'],['Frisón','Ik hâld fan dy'],['Bosnio','Volim te'],['Maorí','Aroha ahau ki a koe'],['Hawaiano','Aloha au iā ʻoe'],['Samoano','Ou te alofa ia te oe'],['Tahitiano','Ua here au ia oe'],['Quechua','Kuyayki'],['Aimara','Munsmawa'],['Guaraní','Rohayhu'],['Mapuche','Poyeyen']]]; // 100
+    const PHRASES = [["Español", "Te amo"], ["Inglés", "I love you"], ["Francés", "Je t’aime"], ["Italiano", "Ti amo"], ["Portugués", "Eu te amo"], ["Alemán", "Ich liebe dich"], ["Neerlandés", "Ik hou van je"], ["Sueco", "Jag älskar dig"], ["Noruego", "Jeg elsker deg"], ["Danés", "Jeg elsker dig"], ["Finés", "Rakastan sinua"], ["Islandés", "Ég elska þig"], ["Polaco", "Kocham cię"], ["Checo", "Miluji tě"], ["Eslovaco", "Ľúbim ťa"], ["Húngaro", "Szeretlek"], ["Rumano", "Te iubesc"], ["Catalán", "T’estimo"], ["Gallego", "Quérote"], ["Euskera", "Maite zaitut"], ["Griego", "Σ’ αγαπώ"], ["Ruso", "Я тебя люблю"], ["Ucraniano", "Я тебе кохаю"], ["Búlgaro", "Обичам те"], ["Serbio", "Волим те"], ["Croata", "Volim te"], ["Esloveno", "Ljubim te"], ["Macedonio", "Те сакам"], ["Albanés", "Të dua"], ["Lituano", "Myliu tave"], ["Letón", "Es tevi mīlu"], ["Estonio", "Ma armastan sind"], ["Turco", "Seni seviyorum"], ["Árabe", "أحبك"], ["Hebreo", "אני אוהב אותך"], ["Persa", "دوستت دارم"], ["Hindi", "मैं तुमसे प्यार करता हूँ"], ["Bengalí", "আমি তোমাকে ভালোবাসি"], ["Urdu", "میں تم سے محبت کرتا ہوں"], ["Punyabí", "ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ"], ["Tamil", "நான் உன்னை காதலிக்கிறேன்"], ["Telugu", "నేను నిన్ను ప్రేమిస్తున్నాను"], ["Maratí", "मी तुझ्यावर प्रेम करतो"], ["Gujarati", "હું તને પ્રેમ કરું છું"], ["Canarés", "ನಾನು ನಿನ್ನನ್ನು ಪ್ರೀತಿಸುತ್ತೇನೆ"], ["Malayalam", "ഞാൻ നിന്നെ സ്നേഹിക്കുന്നു"], ["Chino", "我爱你"], ["Japonés", "愛してる"], ["Coreano", "사랑해"], ["Tailandés", "ฉันรักคุณ"], ["Vietnamita", "Anh yêu em"], ["Indonesio", "Aku cinta kamu"], ["Malayo", "Saya cintakan awak"], ["Filipino", "Mahal kita"], ["Javanés", "Aku tresna sampeyan"], ["Suajili", "Nakupenda"], ["Zulú", "Ngiyakuthanda"], ["Xhosa", "Ndiyakuthanda"], ["Afrikáans", "Ek het jou lief"], ["Amárico", "እወድሃለሁ"], ["Hausa", "Ina son ki"], ["Yoruba", "Mo nifẹ rẹ"], ["Igbo", "A hụrụ m gị n’anya"], ["Somalí", "Waan ku jeclahay"], ["Malagasy", "Tiako ianao"], ["Maltés", "Inħobbok"], ["Irlandés", "Tá grá agam duit"], ["Gaélico escocés", "Tha gaol agam ort"], ["Galés", "Rwy’n dy garu di"], ["Bretón", "Da garout a ran"], ["Latín", "Te amo"], ["Esperanto", "Mi amas vin"], ["Georgiano", "მიყვარხარ"], ["Armenio", "Ես քեզ սիրում եմ"], ["Azerí", "Mən səni sevirəm"], ["Kazajo", "Мен сені жақсы көремін"], ["Uzbeko", "Men seni sevaman"], ["Tayiko", "Ман туро дӯст медорам"], ["Kirguís", "Мен сени сүйөм"], ["Turcomano", "Men seni söýýärin"], ["Mongol", "Би чамд хайртай"], ["Nepalí", "म तिमीलाई माया गर्छु"], ["Cingalés", "මම ඔයාට ආදරෙයි"], ["Birmano", "မင်းကိုချစ်တယ်"], ["Jemer", "ខ្ញុំស្រឡាញ់អ្នក"], ["Lao", "ຂ້ອຍຮັກເຈົ້າ"], ["Pastún", "زه تا سره مینه لرم"], ["Kurdo", "Ez te hez dikim"], ["Yidis", "איך האָב דיך ליב"], ["Luxemburgués", "Ech hunn dech gär"], ["Frisón", "Ik hâld fan dy"], ["Bosnio", "Volim te"], ["Maorí", "Aroha ahau ki a koe"], ["Hawaiano", "Aloha au iā ʻoe"], ["Samoano", "Ou te alofa ia te oe"], ["Tahitiano", "Ua here au ia oe"], ["Quechua", "Kuyayki"], ["Aimara", "Munsmawa"], ["Guaraní", "Rohayhu"], ["Mapuche", "Poyeyen"]]; // 100
 
     // ---------- TULIP STAGE ----------
     const tulipCanvas = document.getElementById('tulip');
@@ -189,96 +189,91 @@
       tctx.shadowBlur=0;
     }
 
-    function makeTextSprite(text){
-      const pad=24, fontSize=48;
+    function makeTextSprite(text, fontSize=44){
+      const pad=18;
       const c=document.createElement('canvas'); const ctx=c.getContext('2d');
-      ctx.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, sans-serif`;
+      ctx.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
       const w=Math.ceil(ctx.measureText(text).width)+pad*2;
       const h=fontSize+pad*2;
       c.width=w; c.height=h;
       const ctx2=c.getContext('2d');
-      ctx2.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, sans-serif`;
+      ctx2.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
       ctx2.textAlign='center'; ctx2.textBaseline='middle';
       ctx2.shadowColor='rgba(255,79,216,0.95)';
-      ctx2.shadowBlur=18;
-      ctx2.fillStyle='#ffd6f4';
+      ctx2.shadowBlur=16;
+      ctx2.fillStyle='#ffe6fa';
       ctx2.fillText(text,w/2,h/2);
-      ctx2.shadowBlur=6; ctx2.fillStyle='#fff'; ctx2.fillText(text,w/2,h/2);
+      ctx2.shadowBlur=4; ctx2.fillStyle='#ffffff'; ctx2.fillText(text,w/2,h/2);
       const tex=new THREE.CanvasTexture(c);
       tex.colorSpace=THREE.SRGBColorSpace;
       tex.minFilter=THREE.LinearFilter;
-      const mat=new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending});
+      tex.generateMipmaps=false;
+      const mat=new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false, depthTest:true, blending:THREE.AdditiveBlending});
       const sprite=new THREE.Sprite(mat);
-      const scale=0.012; // world units per px approx
+      const scale=0.0105;
       sprite.scale.set(w*scale, h*scale, 1);
       sprite.userData.baseScale = sprite.scale.clone();
       return sprite;
     }
 
-    function heartPoint(t,u){
-      // param-like heart surface distribution
-      const x=16*Math.pow(Math.sin(t),3);
-      const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
-      // give thickness
-      const z = (u-0.5)*6 * (1 - Math.abs(Math.sin(t))*0.3);
-      return new THREE.Vector3(x*0.12, y*0.12, z*0.12);
+    function insideHeart(x,y,z){
+      // classic 3D heart implicit: (x^2 + 9/4*y^2 + z^2 - 1)^3 - x^2*z^3 - 9/80*y^2*z^3 <= 0
+      // our coords: use y up as heart up (invert formula's y/z mapping)
+      const a = x*x + (9/4)*z*z + y*y - 1;
+      return (a*a*a - x*x*y*y*y - (9/80)*z*z*y*y*y) <= 0;
+    }
+
+    function randomPointInHeart(){
+      // bounding box for this heart
+      for(let i=0;i<200;i++){
+        const x=(Math.random()*2-1)*1.3;
+        const y=(Math.random()*2-1)*1.4;
+        const z=(Math.random()*2-1)*1.3;
+        if(insideHeart(x,y,z)) return new THREE.Vector3(x*1.85, y*1.85, z*1.85);
+      }
+      return new THREE.Vector3(0,0,0);
     }
 
     function initHeart(){
       if(heartBuilt) return; heartBuilt=true;
       const container=document.getElementById('three');
       renderer=new THREE.WebGLRenderer({antialias:true, alpha:true, powerPreference:'high-performance'});
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.8));
       renderer.setSize(W,H);
       container.appendChild(renderer.domElement);
       scene=new THREE.Scene();
       camera=new THREE.PerspectiveCamera(50, W/H, 0.1, 100);
-      camera.position.set(0,0,7.5);
+      camera.position.set(0,0.2,6.8);
       controls=new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping=true; controls.dampingFactor=0.06;
-      controls.enablePan=false; controls.minDistance=3.2; controls.maxDistance=14;
-      controls.rotateSpeed=0.7; controls.zoomSpeed=0.9;
+      controls.enableDamping=true; controls.dampingFactor=0.07;
+      controls.enablePan=false; controls.minDistance=1.2; controls.maxDistance=16;
+      controls.rotateSpeed=0.75; controls.zoomSpeed=0.95;
 
       group=new THREE.Group();
       scene.add(group);
 
-      // core glow points
-      const coreGeo=new THREE.BufferGeometry();
-      const coreCount=500;
-      const pos=new Float32Array(coreCount*3);
-      for(let i=0;i<coreCount;i++){
-        const t=Math.random()*Math.PI*2, u=Math.random();
-        const p=heartPoint(t,u); p.multiplyScalar(0.85 + Math.random()*0.25);
-        pos[i*3]=p.x; pos[i*3+1]=p.y; pos[i*3+2]=p.z;
-      }
-      coreGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
-      const coreMat=new THREE.PointsMaterial({color:0xff4fd8, size:0.045, transparent:true, opacity:0.9, blending:THREE.AdditiveBlending, depthWrite:false});
-      const core=new THREE.Points(coreGeo,coreMat);
-      group.add(core);
-
-      // words
-      PHRASES.forEach(([,phrase],i)=>{
-        const sprite=makeTextSprite(phrase);
-        const t=(i/PHRASES.length)*Math.PI*2;
-        const u=(i*0.6180339887)%1; // golden ratio spread
-        const p=heartPoint(t,u);
-        // push to surface-ish
-        const s=1.05 + (i%3)*0.04;
-        sprite.position.set(p.x*s, p.y*s, p.z);
-        // slight scale variation
-        const k=0.85 + ((i%5)*0.06);
+      // fill heart completely with words (reuse 100 phrases) - no empty center, no particle points
+      const isMobile = Math.min(W,H) < 700;
+      const COUNT = isMobile ? 260 : 420;
+      for(let i=0;i<COUNT;i++){
+        const phrase = PHRASES[i % PHRASES.length][1];
+        const p = randomPointInHeart();
+        const sprite = makeTextSprite(phrase, isMobile ? 40 : 44);
+        sprite.position.copy(p);
+        const k = 0.55 + ((i%7)*0.07);
         sprite.scale.multiplyScalar(k);
-        sprite.userData.baseScale=sprite.scale.clone();
+        sprite.material.opacity = 0.92;
+        sprite.userData.baseScale = sprite.scale.clone();
         group.add(sprite);
-      });
+      }
 
-      const light=new THREE.PointLight(0xff4fd8, 1.2, 30); light.position.set(0,2,6); scene.add(light);
-      scene.add(new THREE.AmbientLight(0xffffff,0.25));
+      scene.add(new THREE.AmbientLight(0xffffff,0.35));
+      const l1=new THREE.PointLight(0xff4fd8, 1.0, 40); l1.position.set(2,3,6); scene.add(l1);
+      const l2=new THREE.PointLight(0xff8ee8, 0.6, 40); l2.position.set(-3,-2,5); scene.add(l2);
 
-      // adapt word scale on distance for readability
       function adapt(){
         const d=camera.position.distanceTo(controls.target);
-        const factor = THREE.MathUtils.clamp(1.1 - (d-5)*0.06, 0.55, 1.25);
+        const factor = THREE.MathUtils.clamp(1.35 - (d-5)*0.08, 0.55, 1.6);
         group.children.forEach(ch=>{ if(ch.isSprite && ch.userData.baseScale) ch.scale.copy(ch.userData.baseScale).multiplyScalar(factor); });
       }
       controls.addEventListener('change', adapt); adapt();
