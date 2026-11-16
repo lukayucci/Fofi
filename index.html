@@ -189,8 +189,8 @@
       tctx.shadowBlur=0;
     }
 
-    function makeTextSprite(text, fontSize=20){
-      const pad=8;
+    function makeTextSprite(text, fontSize=17){
+      const pad=6;
       const c=document.createElement('canvas'); const ctx=c.getContext('2d');
       ctx.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
       const w=Math.ceil(ctx.measureText(text).width)+pad*2;
@@ -199,9 +199,9 @@
       const ctx2=c.getContext('2d');
       ctx2.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
       ctx2.textAlign='center'; ctx2.textBaseline='middle';
-      ctx2.shadowColor='rgba(255,105,210,0.35)';
-      ctx2.shadowBlur=3;
-      ctx2.fillStyle='#ffd3f1';
+      ctx2.shadowColor='rgba(255,120,210,0.18)';
+      ctx2.shadowBlur=2;
+      ctx2.fillStyle='#ffd9f4';
       ctx2.fillText(text,w/2,h/2);
       ctx2.shadowBlur=0; ctx2.fillStyle='#ffffff'; ctx2.fillText(text,w/2,h/2);
       const tex=new THREE.CanvasTexture(c);
@@ -210,7 +210,7 @@
       tex.generateMipmaps=false;
       const mat=new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false, depthTest:true, blending:THREE.NormalBlending});
       const sprite=new THREE.Sprite(mat);
-      const scale=0.0034;
+      const scale=0.00285;
       sprite.scale.set(w*scale, h*scale, 1);
       sprite.userData.baseScale = sprite.scale.clone();
       return sprite;
@@ -218,17 +218,26 @@
 
     function heartPoints(count){
       const pts=[];
-      const sx=0.118, sy=0.118;
+      const sx=0.125, sy=0.125;
       for(let i=0;i<count;i++){
-        const t=Math.random()*Math.PI*2;
-        const edgeBias = Math.random();
-        // mix: more points toward surface/edge to define clear heart silhouette, plus filled volume
-        const s = edgeBias < 0.45 ? (0.82 + Math.random()*0.18) : Math.pow(Math.random(), 0.55);
-        const x = s * 16 * Math.pow(Math.sin(t),3);
-        const y = s * (13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
-        const zMax = 2.6 * (1 - Math.pow(s,1.6)) + 0.25;
+        const t = (i / count) * Math.PI * 2 + Math.random()*0.25;
+        const r = Math.random();
+        // define clear silhouette and avoid crowded center
+        let s;
+        if(r < 0.6) s = 0.86 + Math.random()*0.14;      // strong outline
+        else if(r < 0.93) s = 0.58 + Math.random()*0.26; // mid volume
+        else s = 0.42 + Math.random()*0.14;              // sparse inner ring, no center
+        const xh = 16 * Math.pow(Math.sin(t),3);
+        const yh = 13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
+        const x = s * xh;
+        const y = s * yh;
+        const zMax = 1.35 + 1.65 * (1 - Math.pow(s, 1.2));
         const z = (Math.random()*2-1) * zMax;
-        pts.push(new THREE.Vector3(x*sx, y*sy, z*0.22));
+        const p = new THREE.Vector3(x*sx, y*sy + 0.08, z*0.18);
+        // extra separation from center so words remain readable
+        const d = Math.sqrt(p.x*p.x + p.y*p.y);
+        if(d < 0.55){ p.x *= 1.35; p.y *= 1.35; }
+        pts.push(p);
       }
       return pts;
     }
@@ -242,37 +251,36 @@
       container.appendChild(renderer.domElement);
       scene=new THREE.Scene();
       camera=new THREE.PerspectiveCamera(45, W/H, 0.1, 100);
-      camera.position.set(0,0.12,7.6);
+      camera.position.set(0,0.1,7.9);
       controls=new OrbitControls(camera, renderer.domElement);
       controls.enableDamping=true; controls.dampingFactor=0.07;
-      controls.enablePan=false; controls.minDistance=1.6; controls.maxDistance=18;
+      controls.enablePan=false; controls.minDistance=1.8; controls.maxDistance=18;
       controls.rotateSpeed=0.75; controls.zoomSpeed=0.95;
 
       group=new THREE.Group();
       scene.add(group);
 
-      // all elements are words forming the heart shape (no extra particles), with clear silhouette
+      // all elements are words forming the heart shape (no extra particles), clear silhouette and readable spacing
       const isMobile = Math.min(W,H) < 700;
-      const COUNT = isMobile ? 460 : 650;
+      const COUNT = isMobile ? 340 : 480;
       const pts = heartPoints(COUNT);
       for(let i=0;i<COUNT;i++){
         const phrase = PHRASES[i % PHRASES.length][1];
         const p = pts[i] || pts[i % pts.length];
-        const sprite = makeTextSprite(phrase, isMobile ? 17 : 18);
+        const sprite = makeTextSprite(phrase, isMobile ? 14 : 15);
         sprite.position.copy(p);
-        const k = 0.9 + ((i%4)*0.05);
+        const k = 0.95 + ((i%3)*0.04);
         sprite.scale.multiplyScalar(k);
-        sprite.material.opacity = 0.96;
+        sprite.material.opacity = 0.97;
         sprite.userData.baseScale = sprite.scale.clone();
         group.add(sprite);
       }
 
-      scene.add(new THREE.AmbientLight(0xffffff,0.55));
-      const l1=new THREE.PointLight(0xff66c7, 0.35, 40); l1.position.set(2,3,6); scene.add(l1);
+      scene.add(new THREE.AmbientLight(0xffffff,0.6));
 
       function adapt(){
         const d=camera.position.distanceTo(controls.target);
-        const factor = THREE.MathUtils.clamp(1.1 - (d-6)*0.05, 0.55, 1.45);
+        const factor = THREE.MathUtils.clamp(1.05 - (d-6.5)*0.045, 0.6, 1.35);
         group.children.forEach(ch=>{ if(ch.isSprite && ch.userData.baseScale) ch.scale.copy(ch.userData.baseScale).multiplyScalar(factor); });
       }
       controls.addEventListener('change', adapt); adapt();
