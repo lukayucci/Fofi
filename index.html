@@ -54,7 +54,7 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    const PHRASES = ["Te amo","I love you","Je t’aime","Ti amo","Eu te amo","Ich liebe dich","Ik hou van je","Jag älskar dig","Jeg elsker deg","Jeg elsker dig","Rakastan sinua","Ég elska þig","Kocham cię","Miluji tě","Ľúbim ťa","Szeretlek","Te iubesc","T’estimo","Quérote","Maite zaitut","Σ’ αγαπώ","Я тебя люблю","Я тебе кохаю","Обичам те","Волим те","Volim te","Ljubim te","Те сакам","Të dua","Myliu tave","Es tevi mīlu","Ma armastan sind","Seni seviyorum","أحبك","אני אוהב אותך","دوستت دارم","मैं तुमसे प्यार करता हूँ","আমি তোমাকে ভালোবাসি","میں تم سے محبت کرتا ہوں","ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ","நான் உன்னை காதலிக்கிறேன்","నేను నిన్ను ప్రేమిస్తున్నాను","मी तुझ्यावर प्रेम करतो","હું તને પ્રેમ કરું છું","ನಾನು ನಿನ್ನನ್ನು ಪ್ರೀತಿಸುತ್ತೇನೆ","ഞാൻ നിന്നെ സ്നേഹിക്കുന്നു","我爱你","愛してる","사랑해","ฉันรักคุณ","Anh yêu em","Aku cinta kamu","Saya cintakan awak","Mahal kita","Aku tresna sampeyan","Nakupenda","Ngiyakuthanda","Ndiyakuthanda","Ek het jou lief","እወድሃለሁ","Ina son ki","Mo nifẹ rẹ","A hụrụ m gị n’anya","Waan ku jeclahay","Tiako ianao","Inħobbok","Tá grá agam duit","Tha gaol agam ort","Rwy’n dy garu di","Da garout a ran","Te amo","Mi amas vin","მიყვარხარ","Ես քեզ սիրում եմ","Mən səni sevirəm","Мен сені жақсы көремін","Men seni sevaman","Ман туро дӯст медорам","Мен сени сүйөм","Men seni söýýärin","Би чамд хайртай","म तिमीलाई माया गर्छु","මම ඔයාට ආදරෙයි","မင်းကိုချစ်တယ်","ខ្ញុំស្រឡាញ់អ្នក","ຂ້ອຍຮັກເຈົ້າ","زه تا سره مینه لرم","Ez te hez dikim","איך האָב דיך ליב","Ech hunn dech gär","Ik hâld fan dy","Volim te","Aroha ahau ki a koe","Aloha au iā ʻoe","Ou te alofa ia te oe","Ua here au ia oe","Kuyayki","Munsmawa","Rohayhu","Poyeyen"];
+    const PHRASES = ["Te amo","I love you","Je t’aime","Ti amo","Eu te amo","Ich liebe dich","Ik hou van je","Jag älskar dig","Jeg elsker deg","Jeg elsker dig","Rakastan sinua","Ég elska þig","Kocham cię","Miluji tě","Ľúbim ťa","Szeretlek","Te iubesc","T’estimo","Quérote","Maite zaitut","Σ’ αγαπώ","Я тебя люблю","Я тебе кохаю","Обичам те","Волим те","Volim te","Ljubim te","Те сакам","Të dua","Myliu tave","Es tevi mīlu","Ma armastan sind","Seni seviyorum","أحبك","אני אוהב אותך","دوستت دارم","मैं तुमसे प्यार करता हूँ","আমি তোমাকে ভালোবাসি","میں تم سے محبت کرتا ہوں","ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ","நான் உன்னை காதலிக்கிறேன்","నేను నిన్ను ప్రేమిస్తున్నాను","मी तुझ्यावर प्रेम करतो","હું તને પ્રેમ કરું છું","ನಾನು ನಿನ್ನನ್ನು ಪ್ರೀತಿಸುತ್ತೇನೆ","ഞാൻ നിന്നെ സ്നേഹിക്കുന്നു","我爱你","愛してる","사랑해","ฉันรักคุณ","Anh yêu em","Aku cinta kamu","Saya cintakan awak","Mahal kita","Aku tresna sampeyan","Nakupenda","Ngiyakuthanda","Ndiyakuthanda","Ek het jou lief","እወድሃለሁ","Ina son ki","Mo nifẹ rẹ","A hụrụ m gị n’anya","Waan ku jeclahay","Tiako ianao","Inħobbok","Tá grá agam duit","Tha gaol agam ort","Rwy’n dy garu di","Da garout a ran","Te amo","Mi amas vin","მიყვარხარ","Ես քեզ սիրում եմ","Mən səni sevirəm","Мен сені жақсы көремін","Men seni sevaman","Ман туро дӯст медорам","Мен сени сүйөм","Men seni söýýärin","Би чамд хайртай","म तिमीलाई माया गर्छु","මම ඔයාට ආදරෙයි","မင်းကိုချစ်တယ်","ខ្ញុំស្រឡាញ់អ្នក","ຂ້ອຍຮັກເຈົ້າ","زه تا سره مینه لرم","Ez te hez dikim","איך האָב דיך ליב","Ech hunn dech gär","Ik hâld fan dy","Volim te","Aroha ahau ki a koe","Aloha au iā ʻoe","Ou te alofa ia te oe","Ua here au ia oe","Kuyayki","Munsmawa","Rohayhu","Poyeyen","Te quiero","Aš tave myliu","Ana behibek","Seni çok seviyorum","Mi te jam","Taim i' ngra leat","Is breá liom tú","Kuv hlub koj","Ya tebya liubliu","Te sakam mnogu","Mwen renmen ou","Ninakupenda","Ek is lief vir jou","Saya cinta padamu","Main tumse pyar karta hoon","Eu te iubesc","Volim te puno"];
 
     const tulipCanvas = document.getElementById('tulip');
     const tctx = tulipCanvas.getContext('2d');
@@ -184,25 +184,24 @@
       const pts=[];
       const scale = 0.105;
       let attempts=0, seed=0;
-      while(pts.length < target && attempts < target*400){
+      while(pts.length < target && attempts < target*500){
         attempts++; seed++;
-        // param around contour for clear shape, mix shell and filled layers
+        // param around contour for clear shape, mix shell and filled layers including center
         const t = (seed * 0.6180339887 % 1) * Math.PI * 2;
         const r = Math.random();
         let s;
-        if(r < 0.55) s = 0.92 + Math.random()*0.08;      // strong outer shell -> clear lobes
-        else if(r < 0.88) s = 0.68 + Math.random()*0.22; // middle
-        else s = 0.48 + Math.random()*0.18;              // inner, not center
+        if(r < 0.45) s = 0.90 + Math.random()*0.10;      // strong outer shell -> clear lobes
+        else if(r < 0.75) s = 0.60 + Math.random()*0.28; // middle
+        else s = 0.18 + Math.random()*0.38;              // inner fill to avoid empty center
         const p2 = heartPoint2D(t);
         const x = p2.x * s;
         const y = p2.y * s;
         // thickness varies, thinner at edges for definition
-        const zMax = 5.2 * (0.25 + 0.75*(1 - Math.pow(s,1.2)));
+        const zMax = 5.4 * (0.25 + 0.75*(1 - Math.pow(s,1.15)));
         const z = (Math.random()*2 - 1) * zMax;
-        // avoid crowded center
-        const radial = Math.sqrt((x*x + y*y) / (16*16 + 17*17));
-        if(radial < 0.22) continue;
         const p = new THREE.Vector3(x*scale, y*scale + 0.12, z*0.085);
+        // keep small clear area for center phrase
+        if(p.length() < 0.22) continue;
         let ok=true;
         for(let i=0;i<pts.length;i++){
           if(p.distanceToSquared(pts[i]) < minDist*minDist){ ok=false; break; }
@@ -265,8 +264,8 @@
       scene.add(group);
 
       const isMobile = Math.min(W,H) < 700;
-      const COUNT = isMobile ? 260 : 360;
-      const minDist = isMobile ? 0.36 : 0.34;
+      const COUNT = isMobile ? 300 : 420;
+      const minDist = isMobile ? 0.33 : 0.31;
       const pts = heartVolumePoints(COUNT, minDist);
       for(let i=0;i<pts.length;i++){
         const phrase = PHRASES[i % PHRASES.length];
@@ -275,6 +274,14 @@
         sprite.userData.baseScale = sprite.scale.clone();
         group.add(sprite);
       }
+
+      // center phrase
+      const center = makeTextSprite('Te Amo Fofi');
+      center.position.set(0, 0.12, 0);
+      center.scale.multiplyScalar(1.35);
+      center.userData.baseScale = center.scale.clone();
+      center.userData.isCenter = true;
+      group.add(center);
 
       scene.add(new THREE.AmbientLight(0xffffff,0.95));
 
