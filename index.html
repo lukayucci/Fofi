@@ -63,29 +63,7 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    const PHRASES = [
-      ['Español','Te amo'],['Inglés','I love you'],['Francés','Je t’aime'],['Italiano','Ti amo'],['Portugués','Eu te amo'],
-      ['Alemán','Ich liebe dich'],['Neerlandés','Ik hou van je'],['Sueco','Jag älskar dig'],['Noruego','Jeg elsker deg'],['Danés','Jeg elsker dig'],
-      ['Finés','Rakastan sinua'],['Islandés','Ég elska þig'],['Polaco','Kocham cię'],['Checo','Miluji tě'],['Eslovaco','Ľúbim ťa'],
-      ['Húngaro','Szeretlek'],['Rumano','Te iubesc'],['Catalán','T’estimo'],['Gallego','Quérote'],['Euskera','Maite zaitut'],
-      ['Griego','Σ’ αγαπώ'],['Ruso','Я тебя люблю'],['Ucraniano','Я тебе кохаю'],['Búlgaro','Обичам те'],['Serbio','Волим те'],
-      ['Croata','Volim te'],['Esloveno','Ljubim te'],['Macedonio','Те сакам'],['Albanés','Të dua'],['Lituano','Myliu tave'],
-      ['Letón','Es tevi mīlu'],['Estonio','Ma armastan sind'],['Turco','Seni seviyorum'],['Árabe','أحبك'],['Hebreo','אני אוהב אותך'],
-      ['Persa','دوستت دارم'],['Hindi','मैं तुमसे प्यार करता हूँ'],['Bengalí','আমি তোমাকে ভালোবাসি'],['Urdu','میں تم سے محبت کرتا ہوں'],['Punyabí','ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ'],
-      ['Tamil','நான் உன்னை காதலிக்கிறேன்'],['Telugu','నేను నిన్ను ప్రేమిస్తున్నాను'],['Maratí','मी तुझ्यावर प्रेम करतो'],['Gujarati','હું તને પ્રેમ કરું છું'],['Canarés','ನಾನು ನಿನ್ನನ್ನು ಪ್ರೀತಿಸುತ್ತೇನೆ'],
-      ['Malayalam','ഞാൻ നിന്നെ സ്നേഹിക്കുന്നു'],['Chino','我爱你'],['Japonés','愛してる'],['Coreano','사랑해'],['Tailandés','ฉันรักคุณ'],
-      ['Vietnamita','Anh yêu em'],['Indonesio','Aku cinta kamu'],['Malayo','Saya cintakan awak'],['Filipino','Mahal kita'],['Javanés','Aku tresna sampeyan'],
-      ['Suajili','Nakupenda'],['Zulú','Ngiyakuthanda'],['Xhosa','Ndiyakuthanda'],['Afrikáans','Ek het jou lief'],['Amárico','እወድሃለሁ'],
-      ['Hausa','Ina son ki'],['Yoruba','Mo nifẹ rẹ'],['Igbo','A hụrụ m gị n’anya'],['Somalí','Waan ku jeclahay'],['Malagasy','Tiako ianao'],
-      ['Maltés','Inħobbok'],['Irlandés','Tá grá agam duit'],['Gaélico escocés','Tha gaol agam ort'],['Galés','Rwy’n dy garu di'],['Bretón','Da garout a ran'],
-      ['Latín','Te amo'],['Esperanto','Mi amas vin'],['Georgiano','მიყვარხარ'],['Armenio','Ես քեզ սիրում եմ'],['Azerí','Mən səni sevirəm'],
-      ['Kazajo','Мен сені жақсы көремін'],['Uzbeko','Men seni sevaman'],['Tayiko','Ман туро дӯст медорам'],['Kirguís','Мен сени сүйөм'],['Turcomano','Men seni söýýärin'],
-      ['Mongol','Би чамд хайртай'],['Nepalí','म तिमीलाई माया गर्छु'],['Cingalés','මම ඔයාට ආදරෙයි'],['Birmano','မင်းကိုချစ်တယ်'],['Jemer','ខ្ញុំស្រឡាញ់អ្នក'],
-      ['Lao','ຂ້ອຍຮັກເຈົ້າ'],['Pastún','زه تا سره مینه لرم'],['Kurdo','Ez te hez dikim'],['Yidis','איך האָב דיך ליב'],['Luxemburgués','Ech hunn dech gär'],
-      ['Frisón','Ik hâld fan dy'],['Bosnio','Volim te'],['Maorí','Aroha ahau ki a koe'],['Hawaiano','Aloha au iā ʻoe'],['Samoano','Ou te alofa ia te oe'],
-      ['Tahitiano','Ua here au ia oe'],['Quechua','Kuyayki'],['Aimara','Munsmawa'],['Guaraní','Rohayhu'],['Mapuche','Poyeyen'],
-      ['Tagalo','Mahal kita'],['Sesoto','Kea u rata'],['Tswana','Ke a go rata'],['Shona','Ndinokuda'],['Kinyarwanda','Ndagukunda']
-    ]; // 100
+    const PHRASES = [[['Español','Te amo'],['Inglés','I love you'],['Francés','Je t’aime'],['Italiano','Ti amo'],['Portugués','Eu te amo'],['Alemán','Ich liebe dich'],['Neerlandés','Ik hou van je'],['Sueco','Jag älskar dig'],['Noruego','Jeg elsker deg'],['Danés','Jeg elsker dig'],['Finés','Rakastan sinua'],['Islandés','Ég elska þig'],['Polaco','Kocham cię'],['Checo','Miluji tě'],['Eslovaco','Ľúbim ťa'],['Húngaro','Szeretlek'],['Rumano','Te iubesc'],['Catalán','T’estimo'],['Gallego','Quérote'],['Euskera','Maite zaitut'],['Griego','Σ’ αγαπώ'],['Ruso','Я тебя люблю'],['Ucraniano','Я тебе кохаю'],['Búlgaro','Обичам те'],['Serbio','Волим те'],['Croata','Volim te'],['Esloveno','Ljubim te'],['Macedonio','Те сакам'],['Albanés','Të dua'],['Lituano','Myliu tave'],['Letón','Es tevi mīlu'],['Estonio','Ma armastan sind'],['Turco','Seni seviyorum'],['Árabe','أحبك'],['Hebreo','אני אוהב אותך'],['Persa','دوستت دارم'],['Hindi','मैं तुमसे प्यार करता हूँ'],['Bengalí','আমি তোমাকে ভালোবাসি'],['Urdu','میں تم سے محبت کرتا ہوں'],['Punyabí','ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ'],['Tamil','நான் உன்னை காதலிக்கிறேன்'],['Telugu','నేను నిన్ను ప్రేమిస్తున్నాను'],['Maratí','मी तुझ्यावर प्रेम करतो'],['Gujarati','હું તને પ્રેમ કરું છું'],['Canarés','ನಾನು ನಿನ್ನನ್ನು ಪ್ರೀತಿಸುತ್ತೇನೆ'],['Malayalam','ഞാൻ നിന്നെ സ്നേഹിക്കുന്നു'],['Chino','我爱你'],['Japonés','愛してる'],['Coreano','사랑해'],['Tailandés','ฉันรักคุณ'],['Vietnamita','Anh yêu em'],['Indonesio','Aku cinta kamu'],['Malayo','Saya cintakan awak'],['Filipino','Mahal kita'],['Javanés','Aku tresna sampeyan'],['Suajili','Nakupenda'],['Zulú','Ngiyakuthanda'],['Xhosa','Ndiyakuthanda'],['Afrikáans','Ek het jou lief'],['Amárico','እወድሃለሁ'],['Hausa','Ina son ki'],['Yoruba','Mo nifẹ rẹ'],['Igbo','A hụrụ m gị n’anya'],['Somalí','Waan ku jeclahay'],['Malagasy','Tiako ianao'],['Maltés','Inħobbok'],['Irlandés','Tá grá agam duit'],['Gaélico escocés','Tha gaol agam ort'],['Galés','Rwy’n dy garu di'],['Bretón','Da garout a ran'],['Latín','Te amo'],['Esperanto','Mi amas vin'],['Georgiano','მიყვარხარ'],['Armenio','Ես քեզ սիրում եմ'],['Azerí','Mən səni sevirəm'],['Kazajo','Мен сені жақсы көремін'],['Uzbeko','Men seni sevaman'],['Tayiko','Ман туро дӯст медорам'],['Kirguís','Мен сени сүйөм'],['Turcomano','Men seni söýýärin'],['Mongol','Би чамд хайртай'],['Nepalí','म तिमीलाई माया गर्छु'],['Cingalés','මම ඔයාට ආදරෙයි'],['Birmano','မင်းကိုချစ်တယ်'],['Jemer','ខ្ញុំស្រឡាញ់អ្នក'],['Lao','ຂ້ອຍຮັກເຈົ້າ'],['Pastún','زه تا سره مینه لرم'],['Kurdo','Ez te hez dikim'],['Yidis','איך האָב דיך ליב'],['Luxemburgués','Ech hunn dech gär'],['Frisón','Ik hâld fan dy'],['Bosnio','Volim te'],['Maorí','Aroha ahau ki a koe'],['Hawaiano','Aloha au iā ʻoe'],['Samoano','Ou te alofa ia te oe'],['Tahitiano','Ua here au ia oe'],['Quechua','Kuyayki'],['Aimara','Munsmawa'],['Guaraní','Rohayhu'],['Mapuche','Poyeyen']]]; // 100
 
     // ---------- TULIP STAGE ----------
     const tulipCanvas = document.getElementById('tulip');
