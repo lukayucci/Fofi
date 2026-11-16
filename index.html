@@ -18,7 +18,7 @@
     canvas, #three { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
     #tulip-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transition: opacity 1.2s ease; }
     #tulip-stage.fade { opacity: 0; pointer-events: none; }
-    #heart-stage { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease; pointer-events: none; }
+    #heart-stage { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease; pointer-events: none; background:#000; }
     #heart-stage.show { opacity: 1; pointer-events: auto; }
     #hint {
       position: absolute; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom)); transform: translateX(-50%);
@@ -50,40 +50,36 @@
   <div id="app">
     <div class="stars"></div>
     <div id="tulip-stage"><canvas id="tulip"></canvas></div>
-    <div id="heart-stage"><div id="three"></div></div>
+    <div id="heart-stage"><canvas id="heartCanvas"></canvas></div>
     <button id="repeat" aria-label="Repetir">↺ Repetir</button>
-    <div id="hint">Girá y hacé zoom para leer cada palabra</div>
+    <div id="hint">Hecho con amor</div>
   </div>
 
-  <script type="importmap">
-    { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                   "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
-  </script>
-  <script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    <script>
+    const PHRASES = ["Te amo","I love you","Je t’aime","Ti amo","Eu te amo","Ich liebe dich","Ik hou van je","Jag älskar dig","Jeg elsker deg","Jeg elsker dig","Rakastan sinua","Ég elska þig","Kocham cię","Miluji tě","Ľúbim ťa","Szeretlek","Te iubesc","T’estimo","Quérote","Maite zaitut","Σ’ αγαπώ","Я тебя люблю","Я тебе кохаю","Обичам те","Волим те","Volim te","Ljubim te","Те сакам","Të dua","Myliu tave","Es tevi mīlu","Ma armastan sind","Seni seviyorum","أحبك","אני אוהב אותך","دوستت دارم","मैं तुमसे प्यार करता हूँ","আমি তোমাকে ভালোবাসি","میں تم سے محبت کرتا ہوں","ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ","நான் உன்னை காதலிக்கிறேன்","నేను నిన్ను ప్రేమిస్తున్నాను","मी तुझ्यावर प्रेम करतो","હું તને પ્રેમ કરું છું","ನಾನು ನಿನ್ನನ್ನು ಪ್ರೀತಿಸುತ್ತೇನೆ","ഞാൻ നിന്നെ സ്നേഹിക്കുന്നു","我爱你","愛してる","사랑해","ฉันรักคุณ","Anh yêu em","Aku cinta kamu","Saya cintakan awak","Mahal kita","Aku tresna sampeyan","Nakupenda","Ngiyakuthanda","Ndiyakuthanda","Ek het jou lief","እወድሃለሁ","Ina son ki","Mo nifẹ rẹ","A hụrụ m gị n’anya","Waan ku jeclahay","Tiako ianao","Inħobbok","Tá grá agam duit","Tha gaol agam ort","Rwy’n dy garu di","Da garout a ran","Te amo","Mi amas vin","მიყვარხარ","Ես քեզ սիրում եմ","Mən səni sevirəm","Мен сені жақсы көремін","Men seni sevaman","Ман туро дӯст медорам","Мен сени сүйөм","Men seni söýýärin","Би чамд хайртай","म तिमीलाई माया गर्छु","මම ඔයාට ආදරෙයි","မင်းကိုချစ်တယ်","ខ្ញុំស្រឡាញ់អ្នក","ຂ້ອຍຮັກເຈົ້າ","زه تا سره مینه لرم","Ez te hez dikim","איך האָב דיך ליב","Ech hunn dech gär","Ik hâld fan dy","Volim te","Aroha ahau ki a koe","Aloha au iā ʻoe","Ou te alofa ia te oe","Ua here au ia oe","Kuyayki","Munsmawa","Rohayhu","Poyeyen"];
 
-    const PHRASES = [["Español", "Te amo"], ["Inglés", "I love you"], ["Francés", "Je t’aime"], ["Italiano", "Ti amo"], ["Portugués", "Eu te amo"], ["Alemán", "Ich liebe dich"], ["Neerlandés", "Ik hou van je"], ["Sueco", "Jag älskar dig"], ["Noruego", "Jeg elsker deg"], ["Danés", "Jeg elsker dig"], ["Finés", "Rakastan sinua"], ["Islandés", "Ég elska þig"], ["Polaco", "Kocham cię"], ["Checo", "Miluji tě"], ["Eslovaco", "Ľúbim ťa"], ["Húngaro", "Szeretlek"], ["Rumano", "Te iubesc"], ["Catalán", "T’estimo"], ["Gallego", "Quérote"], ["Euskera", "Maite zaitut"], ["Griego", "Σ’ αγαπώ"], ["Ruso", "Я тебя люблю"], ["Ucraniano", "Я тебе кохаю"], ["Búlgaro", "Обичам те"], ["Serbio", "Волим те"], ["Croata", "Volim te"], ["Esloveno", "Ljubim te"], ["Macedonio", "Те сакам"], ["Albanés", "Të dua"], ["Lituano", "Myliu tave"], ["Letón", "Es tevi mīlu"], ["Estonio", "Ma armastan sind"], ["Turco", "Seni seviyorum"], ["Árabe", "أحبك"], ["Hebreo", "אני אוהב אותך"], ["Persa", "دوستت دارم"], ["Hindi", "मैं तुमसे प्यार करता हूँ"], ["Bengalí", "আমি তোমাকে ভালোবাসি"], ["Urdu", "میں تم سے محبت کرتا ہوں"], ["Punyabí", "ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ"], ["Tamil", "நான் உன்னை காதலிக்கிறேன்"], ["Telugu", "నేను నిన్ను ప్రేమిస్తున్నాను"], ["Maratí", "मी तुझ्यावर प्रेम करतो"], ["Gujarati", "હું તને પ્રેમ કરું છું"], ["Canarés", "ನಾನು ನಿನ್ನನ್ನು ಪ್ರೀತಿಸುತ್ತೇನೆ"], ["Malayalam", "ഞാൻ നിന്നെ സ്നേഹിക്കുന്നു"], ["Chino", "我爱你"], ["Japonés", "愛してる"], ["Coreano", "사랑해"], ["Tailandés", "ฉันรักคุณ"], ["Vietnamita", "Anh yêu em"], ["Indonesio", "Aku cinta kamu"], ["Malayo", "Saya cintakan awak"], ["Filipino", "Mahal kita"], ["Javanés", "Aku tresna sampeyan"], ["Suajili", "Nakupenda"], ["Zulú", "Ngiyakuthanda"], ["Xhosa", "Ndiyakuthanda"], ["Afrikáans", "Ek het jou lief"], ["Amárico", "እወድሃለሁ"], ["Hausa", "Ina son ki"], ["Yoruba", "Mo nifẹ rẹ"], ["Igbo", "A hụrụ m gị n’anya"], ["Somalí", "Waan ku jeclahay"], ["Malagasy", "Tiako ianao"], ["Maltés", "Inħobbok"], ["Irlandés", "Tá grá agam duit"], ["Gaélico escocés", "Tha gaol agam ort"], ["Galés", "Rwy’n dy garu di"], ["Bretón", "Da garout a ran"], ["Latín", "Te amo"], ["Esperanto", "Mi amas vin"], ["Georgiano", "მიყვარხარ"], ["Armenio", "Ես քեզ սիրում եմ"], ["Azerí", "Mən səni sevirəm"], ["Kazajo", "Мен сені жақсы көремін"], ["Uzbeko", "Men seni sevaman"], ["Tayiko", "Ман туро дӯст медорам"], ["Kirguís", "Мен сени сүйөм"], ["Turcomano", "Men seni söýýärin"], ["Mongol", "Би чамд хайртай"], ["Nepalí", "म तिमीलाई माया गर्छु"], ["Cingalés", "මම ඔයාට ආදරෙයි"], ["Birmano", "မင်းကိုချစ်တယ်"], ["Jemer", "ខ្ញុំស្រឡាញ់អ្នក"], ["Lao", "ຂ້ອຍຮັກເຈົ້າ"], ["Pastún", "زه تا سره مینه لرم"], ["Kurdo", "Ez te hez dikim"], ["Yidis", "איך האָב דיך ליב"], ["Luxemburgués", "Ech hunn dech gär"], ["Frisón", "Ik hâld fan dy"], ["Bosnio", "Volim te"], ["Maorí", "Aroha ahau ki a koe"], ["Hawaiano", "Aloha au iā ʻoe"], ["Samoano", "Ou te alofa ia te oe"], ["Tahitiano", "Ua here au ia oe"], ["Quechua", "Kuyayki"], ["Aimara", "Munsmawa"], ["Guaraní", "Rohayhu"], ["Mapuche", "Poyeyen"]]; // 100
-
-    // ---------- TULIP STAGE ----------
     const tulipCanvas = document.getElementById('tulip');
     const tctx = tulipCanvas.getContext('2d');
     const tulipStage = document.getElementById('tulip-stage');
     const heartStage = document.getElementById('heart-stage');
+    const heartCanvas = document.getElementById('heartCanvas');
+    const hctx = heartCanvas.getContext('2d');
     const hint = document.getElementById('hint');
     const repeatBtn = document.getElementById('repeat');
 
     let W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2);
-    let startTime=0, animId, particles=[], transitioning=false, heartBuilt=false;
-    let renderer, scene, camera, controls, group, autoSpin=0;
+    let startTime=0, animId, particles=[], transitioning=false;
+    let heartAnimId=null, heartStart=0, heartRows=[];
 
-    function resizeTulip(){
+    function resizeAll(){
       W = window.innerWidth; H = window.innerHeight; dpr = Math.min(window.devicePixelRatio||1,2);
       tulipCanvas.width = Math.floor(W*dpr); tulipCanvas.height = Math.floor(H*dpr);
       tctx.setTransform(dpr,0,0,dpr,0,0);
-      if(renderer){ renderer.setSize(W,H,false); camera.aspect=W/H; camera.updateProjectionMatrix(); }
+      heartCanvas.width = Math.floor(W*dpr); heartCanvas.height = Math.floor(H*dpr);
+      hctx.setTransform(dpr,0,0,dpr,0,0);
+      heartRows=[];
     }
-    window.addEventListener('resize', resizeTulip, {passive:true});
+    window.addEventListener('resize', resizeAll, {passive:true});
 
     function drawTulip(t){
       tctx.clearRect(0,0,W,H);
@@ -92,8 +88,6 @@
       tctx.save();
       tctx.translate(cx, baseY);
       tctx.rotate(sway*Math.PI/180*0.6);
-
-      // stem
       const stemH=220*scale;
       const gradStem=tctx.createLinearGradient(0,0,0,-stemH);
       gradStem.addColorStop(0,'#1f7a4a'); gradStem.addColorStop(1,'#46d17f');
@@ -102,8 +96,6 @@
       tctx.moveTo(0,0);
       tctx.quadraticCurveTo(18*scale,-stemH*0.45,-6*scale,-stemH);
       tctx.stroke();
-
-      // leaf
       function leaf(side){
         tctx.save(); tctx.translate(0,-stemH*0.35); tctx.scale(side,1);
         const g=tctx.createLinearGradient(0,0,120*scale,-40*scale);
@@ -116,8 +108,6 @@
         tctx.fill(); tctx.restore();
       }
       leaf(1); leaf(-0.9);
-
-      // petals
       const py=-stemH, bloom=1+Math.sin(t*0.002)*0.03;
       tctx.translate(0,py);
       tctx.scale(bloom,bloom);
@@ -138,14 +128,10 @@
       petal(0.55,50*scale,90*scale,0,r1,r2);
       petal(-0.2,42*scale,80*scale,0,r4,r2);
       petal(0.2,42*scale,80*scale,0,r4,r2);
-      // glow center
       const glow=tctx.createRadialGradient(0,-40*scale,5*scale,0,-40*scale,60*scale);
       glow.addColorStop(0,'rgba(255,220,240,.7)'); glow.addColorStop(1,'rgba(255,120,180,0)');
       tctx.fillStyle=glow; tctx.beginPath(); tctx.arc(0,-40*scale,55*scale,0,Math.PI*2); tctx.fill();
-
       tctx.restore();
-
-      // ground glow
       const gg=tctx.createRadialGradient(cx,H*0.82,10*scale,cx,H*0.82,140*scale);
       gg.addColorStop(0,'rgba(255,79,216,.18)'); gg.addColorStop(1,'rgba(255,79,216,0)');
       tctx.fillStyle=gg; tctx.beginPath(); tctx.ellipse(cx,H*0.83,140*scale,30*scale,0,0,Math.PI*2); tctx.fill();
@@ -161,11 +147,9 @@
           x: cx + Math.cos(ang)*rad + (Math.random()-0.5)*40,
           y: cy + Math.sin(ang)*rad*0.9 + (Math.random()-0.5)*40,
           vx:(Math.random()-0.5)*1.2, vy:(Math.random()-0.8)*1.2,
-          tx:0, ty:0, a:1, s:1+Math.random()*2.2,
-          hue: 300 + Math.random()*30
+          tx:0, ty:0, s:1+Math.random()*2.2, hue: 300 + Math.random()*30
         });
       }
-      // targets roughly heart shape in 2D for transition
       for(let i=0;i<particles.length;i++){
         const tt=i/particles.length*Math.PI*2;
         const x=16*Math.pow(Math.sin(tt),3);
@@ -180,7 +164,6 @@
       for(const pt of particles){
         pt.x += (pt.tx-pt.x)*0.06 + pt.vx*0.2;
         pt.y += (pt.ty-pt.y)*0.06 + pt.vy*0.2;
-        pt.a *= 0.992;
         tctx.beginPath();
         tctx.fillStyle=`hsla(${pt.hue},100%,70%,${0.25 + p*0.55})`;
         tctx.shadowColor=`hsla(${pt.hue},100%,65%,.9)`; tctx.shadowBlur=12;
@@ -189,123 +172,146 @@
       tctx.shadowBlur=0;
     }
 
-    function makeTextSprite(text, fontSize=14){
-      const pad=5;
-      const c=document.createElement('canvas'); const ctx=c.getContext('2d');
-      ctx.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
-      const w=Math.ceil(ctx.measureText(text).width)+pad*2;
-      const h=fontSize+pad*2;
-      c.width=w; c.height=h;
-      const ctx2=c.getContext('2d');
-      ctx2.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
-      ctx2.textAlign='center'; ctx2.textBaseline='middle';
-      ctx2.fillStyle='#ffbde9';
-      ctx2.fillText(text,w/2,h/2);
-      ctx2.fillStyle='#ffffff';
-      ctx2.fillText(text,w/2,h/2);
-      const tex=new THREE.CanvasTexture(c);
-      tex.colorSpace=THREE.SRGBColorSpace;
-      tex.minFilter=THREE.LinearFilter;
-      tex.generateMipmaps=false;
-      const mat=new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false, depthTest:true, blending:THREE.NormalBlending});
-      const sprite=new THREE.Sprite(mat);
-      const scale=0.00255;
-      sprite.scale.set(w*scale, h*scale, 1);
-      sprite.userData.baseScale = sprite.scale.clone();
-      return sprite;
+    function insideHeart2(nx, ny){
+      const a = nx*nx + ny*ny - 1;
+      return (a*a*a - nx*nx*ny*ny*ny) <= 0;
     }
 
-    function heartCandidate(i, total){
-      const sx=0.13, sy=0.13;
-      const t = (i / total) * Math.PI * 2 * 3.0 + Math.random()*0.6;
-      const r = Math.random();
-      let s;
-      if(r < 0.72) s = 0.9 + Math.random()*0.1;       // clear silhouette
-      else s = 0.62 + Math.random()*0.22;              // inner layer, spaced from center
-      const xh = 16 * Math.pow(Math.sin(t),3);
-      const yh = 13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
-      const x = s * xh;
-      const y = s * yh;
-      const zMax = 0.9 + 1.25 * (1 - Math.pow(s, 1.1));
-      const z = (Math.random()*2-1) * zMax;
-      return new THREE.Vector3(x*sx, y*sy + 0.08, z*0.16);
-    }
-
-    function heartPoints(count, minDist){
-      const pts=[];
-      const maxAttempts = count * 120;
-      let attempts=0, seed=0;
-      while(pts.length < count && attempts < maxAttempts){
-        attempts++; seed++;
-        const p = heartCandidate(seed, count);
-        let ok = true;
-        for(let j=0;j<pts.length;j++){
-          if(p.distanceTo(pts[j]) < minDist){ ok = false; break; }
+    function heartXRangeAtY(ny, scale, cx){
+      let minX=null, maxX=null;
+      const maxR = scale*1.35;
+      const step = 2;
+      for(let px = Math.floor(cx-maxR); px <= Math.ceil(cx+maxR); px+=step){
+        const nx = (px - cx)/scale;
+        if(insideHeart2(nx, ny)){
+          if(minX===null) minX=px;
+          maxX=px;
         }
-        if(ok) pts.push(p);
       }
-      // if we couldn't fill (due to spacing), relax slightly by keeping what we have
-      return pts;
+      // refine edges
+      if(minX!==null){ while(minX>cx-maxR && insideHeart2((minX-1-cx)/scale, ny)) minX--; }
+      if(maxX!==null){ while(maxX<cx+maxR && insideHeart2((maxX+1-cx)/scale, ny)) maxX++; }
+      return (minX!==null && maxX-minX>12) ? [minX,maxX] : null;
     }
 
-    function initHeart(){
-      if(heartBuilt) return; heartBuilt=true;
-      const container=document.getElementById('three');
-      renderer=new THREE.WebGLRenderer({antialias:true, alpha:true, powerPreference:'high-performance'});
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.8));
-      renderer.setSize(W,H);
-      container.appendChild(renderer.domElement);
-      scene=new THREE.Scene();
-      camera=new THREE.PerspectiveCamera(45, W/H, 0.1, 100);
-      camera.position.set(0,0.1,8.2);
-      controls=new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping=true; controls.dampingFactor=0.07;
-      controls.enablePan=false; controls.minDistance=2.0; controls.maxDistance=18;
-      controls.rotateSpeed=0.75; controls.zoomSpeed=0.95;
-
-      group=new THREE.Group();
-      scene.add(group);
-
-      // all elements are words forming the heart shape, spaced out with no overlap and no glow
-      const isMobile = Math.min(W,H) < 700;
-      const COUNT = isMobile ? 220 : 300;
-      const minDist = isMobile ? 0.46 : 0.44;
-      const pts = heartPoints(COUNT, minDist);
-      for(let i=0;i<pts.length;i++){
-        const phrase = PHRASES[i % PHRASES.length][1];
-        const p = pts[i];
-        const sprite = makeTextSprite(phrase, isMobile ? 13 : 14);
-        sprite.position.copy(p);
-        sprite.material.opacity = 1.0;
-        sprite.userData.baseScale = sprite.scale.clone();
-        group.add(sprite);
+    function buildHeartRows(){
+      heartRows=[];
+      const scale = Math.min(W, H) * 0.44;
+      const cx = W/2, cy = H*0.53;
+      const fontSize = Math.max(10, Math.min(13, W*0.03));
+      const lineH = fontSize * 1.12;
+      hctx.setTransform(dpr,0,0,dpr,0,0);
+      hctx.font = `700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
+      hctx.textBaseline='middle';
+      const spaceW = hctx.measureText(' ').width;
+      const top = cy - scale*1.15;
+      const bottom = cy + scale*1.02;
+      let phraseIndex = 0;
+      for(let y = top; y <= bottom; y += lineH){
+        const ny = - (y - cy) / scale;
+        const range = heartXRangeAtY(ny, scale, cx);
+        if(!range) continue;
+        let [x1,x2] = range;
+        x1 += 1; x2 -= 1;
+        const width = x2 - x1;
+        if(width < 20) continue;
+        let words=[], idx=phraseIndex, totalW=0, guard=0;
+        while(totalW < width + 20 && guard < 120){
+          const w = PHRASES[idx % PHRASES.length];
+          const ww = hctx.measureText(w).width;
+          if(words.length===0 || totalW + spaceW*0.4 + ww <= width + 40){
+            words.push(w);
+            totalW += (words.length>1?spaceW*0.4:0) + ww;
+          } else {
+            words.push(w); // ensure filled edge-to-edge
+            totalW += ww;
+          }
+          idx++; guard++;
+        }
+        phraseIndex = (phraseIndex + 2) % PHRASES.length;
+        heartRows.push({x1,x2,y,width,words,lineH,fontSize,scale,cy});
       }
-
-      scene.add(new THREE.AmbientLight(0xffffff,0.65));
-
-      function adapt(){
-        const d=camera.position.distanceTo(controls.target);
-        const factor = THREE.MathUtils.clamp(1.0 - (d-7)*0.04, 0.65, 1.25);
-        group.children.forEach(ch=>{ if(ch.isSprite && ch.userData.baseScale) ch.scale.copy(ch.userData.baseScale).multiplyScalar(factor); });
-      }
-      controls.addEventListener('change', adapt); adapt();
-
-      animateHeart();
+      return {scale,cy};
     }
 
-    function animateHeart(){
-      requestAnimationFrame(animateHeart);
-      if(!renderer) return;
-      autoSpin += 0.0015;
-      if(group) group.rotation.y = Math.sin(autoSpin)*0.25 + autoSpin*0.15;
-      controls.update();
-      renderer.render(scene,camera);
+    function drawJustifiedLine(words, x, y, width){
+      if(words.length===0) return;
+      if(words.length===1){ hctx.fillText(words[0], x, y); return; }
+      const widths = words.map(w=>hctx.measureText(w).width);
+      const totalWords = widths.reduce((a,b)=>a+b,0);
+      const gaps = words.length-1;
+      let gap = (width - totalWords) / gaps;
+      if(gap < 0.5) gap = 0.5;
+      let cxp = x;
+      for(let i=0;i<words.length;i++){
+        hctx.fillText(words[i], cxp, y);
+        cxp += widths[i] + gap;
+      }
+    }
+
+    function drawHeartText(ts){
+      if(!heartStart) heartStart=ts;
+      const elapsed = ts - heartStart;
+      hctx.setTransform(dpr,0,0,dpr,0,0);
+      hctx.clearRect(0,0,W,H);
+      hctx.fillStyle='#000';
+      hctx.fillRect(0,0,W,H);
+
+      if(heartRows.length===0) buildHeartRows();
+      if(heartRows.length===0){ heartAnimId=requestAnimationFrame(drawHeartText); return; }
+      const {scale,cy} = heartRows[0];
+
+      const baseGrad = hctx.createLinearGradient(0, cy-scale*1.2, 0, cy+scale*1.1);
+      baseGrad.addColorStop(0.00,'#e5e5e5');
+      baseGrad.addColorStop(0.15,'#ff8fce');
+      baseGrad.addColorStop(0.30,'#f8f8f8');
+      baseGrad.addColorStop(0.45,'#ff4fb3');
+      baseGrad.addColorStop(0.60,'#ededed');
+      baseGrad.addColorStop(0.75,'#ff7fc8');
+      baseGrad.addColorStop(0.90,'#ffffff');
+      baseGrad.addColorStop(1.00,'#d8d8d8');
+
+      const period = W + H + 500;
+      const p = (elapsed * 0.16) % period;
+      const sx = p - H - 220;
+      const shineGrad = hctx.createLinearGradient(sx, 0, sx + 280, H);
+      shineGrad.addColorStop(0.0,'rgba(255,255,255,0)');
+      shineGrad.addColorStop(0.43,'rgba(255,255,255,0)');
+      shineGrad.addColorStop(0.5,'rgba(255,255,255,0.95)');
+      shineGrad.addColorStop(0.57,'rgba(255,255,255,0)');
+      shineGrad.addColorStop(1.0,'rgba(255,255,255,0)');
+
+      for(const row of heartRows){
+        hctx.font = `700 ${row.fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
+        hctx.textBaseline='middle';
+        hctx.save();
+        hctx.beginPath();
+        hctx.rect(row.x1, row.y-row.lineH/2, row.width, row.lineH);
+        hctx.clip();
+        hctx.fillStyle = baseGrad;
+        drawJustifiedLine(row.words, row.x1, row.y, row.width);
+        hctx.globalCompositeOperation = 'screen';
+        hctx.fillStyle = shineGrad;
+        drawJustifiedLine(row.words, row.x1, row.y, row.width);
+        hctx.globalCompositeOperation = 'source-over';
+        hctx.restore();
+      }
+
+      heartAnimId = requestAnimationFrame(drawHeartText);
+    }
+
+    function startHeart(){
+      if(heartAnimId) cancelAnimationFrame(heartAnimId);
+      heartStart=0;
+      heartAnimId = requestAnimationFrame(drawHeartText);
     }
 
     let transitionStart=0;
     function runSequence(){
-      transitioning=false; particles=[]; heartStage.classList.remove('show'); tulipStage.classList.remove('fade');
+      transitioning=false; particles=[];
+      heartStage.classList.remove('show'); tulipStage.classList.remove('fade');
       hint.classList.remove('show'); repeatBtn.classList.remove('show');
+      if(heartAnimId){ cancelAnimationFrame(heartAnimId); heartAnimId=null; }
       cancelAnimationFrame(animId);
       startTime=performance.now();
       const tulipDuration=4200, transDuration=1600;
@@ -322,10 +328,10 @@
           tulipStage.classList.add('fade');
           if(p>=1){
             heartStage.classList.add('show');
-            initHeart();
+            startHeart();
             setTimeout(()=>hint.classList.add('show'), 400);
             setTimeout(()=>repeatBtn.classList.add('show'), 800);
-            return; // stop 2d loop, 3d has its own
+            return;
           }
         }
         animId=requestAnimationFrame(frame);
@@ -333,14 +339,12 @@
       animId=requestAnimationFrame(frame);
     }
 
-    repeatBtn.addEventListener('click', ()=>{
-      if(renderer){ // reset camera a bit
-        camera.position.set(0,0,7.5); controls.target.set(0,0,0); controls.update();
-      }
-      runSequence();
-    });
+    repeatBtn.addEventListener('click', runSequence);
 
-    resizeTulip();
+    // adjust hint for 2D
+    hint.textContent = 'Hecho con amor';
+
+    resizeAll();
     runSequence();
   </script>
 </body>
