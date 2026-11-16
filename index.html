@@ -182,25 +182,26 @@
 
     function heartVolumePoints(target, minDist){
       const pts=[];
-      const scale = 0.105;
-      const center = new THREE.Vector3(0, 0.12, 0);
+      const scaleX = 0.108;
+      const scaleY = 0.112; // emphasize vertical/lobe shape
+      const center = new THREE.Vector3(0, 0.14, 0);
       let attempts=0, seed=0;
-      while(pts.length < target && attempts < target*600){
+      while(pts.length < target && attempts < target*700){
         attempts++; seed++;
-        // param around contour for clear shape, mix shell and filled layers including center
+        // more points on the outline to make the heart silhouette and two lobes clearly visible
         const t = (seed * 0.6180339887 % 1) * Math.PI * 2;
         const r = Math.random();
         let s;
-        if(r < 0.45) s = 0.90 + Math.random()*0.10;      // strong outer shell -> clear lobes
-        else if(r < 0.78) s = 0.58 + Math.random()*0.30; // middle
-        else s = 0.28 + Math.random()*0.28;              // inner fill
+        if(r < 0.62) s = 0.955 + Math.random()*0.045;    // crisp outer shell (lobes/cleft)
+        else if(r < 0.86) s = 0.72 + Math.random()*0.21;  // middle volume
+        else s = 0.36 + Math.random()*0.30;               // inner fill
         const p2 = heartPoint2D(t);
         const x = p2.x * s;
         const y = p2.y * s;
-        // thickness varies, thinner at edges for definition
-        const zMax = 5.4 * (0.25 + 0.75*(1 - Math.pow(s,1.15)));
+        // reduce depth so 3D doesn't blur the heart shape
+        const zMax = 3.6 * (0.18 + 0.82*(1 - Math.pow(s,1.25)));
         const z = (Math.random()*2 - 1) * zMax;
-        const p = new THREE.Vector3(x*scale, y*scale + 0.12, z*0.085);
+        const p = new THREE.Vector3(x*scaleX, y*scaleY + 0.14, z*0.075);
         // keep clear area around center phrase so it stands out
         if(p.distanceTo(center) < 0.62) continue;
         let ok=true;
