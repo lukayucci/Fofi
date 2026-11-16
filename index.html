@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#05030a">
+  <title>Fofi</title>
+  <style>
+    :root {
+      --bg: #05030a;
+      --pink: #ff4fd8;
+      --pink-soft: #ff8ee8;
+      --glow: 0 0 12px rgba(255,79,216,.7), 0 0 28px rgba(255,79,216,.35);
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: radial-gradient(ellipse at bottom, #12061a 0%, var(--bg) 60%); color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    #app { position: fixed; inset: 0; }
+    canvas, #three { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+    #tulip-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transition: opacity 1.2s ease; }
+    #tulip-stage.fade { opacity: 0; pointer-events: none; }
+    #heart-stage { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease; pointer-events: none; }
+    #heart-stage.show { opacity: 1; pointer-events: auto; }
+    #hint {
+      position: absolute; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+      font-size: 13px; letter-spacing: .02em; color: rgba(255,255,255,.75); text-align: center;
+      padding: 8px 14px; border-radius: 999px; background: rgba(20,10,28,.45); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,79,216,.25); box-shadow: 0 0 18px rgba(255,79,216,.12);
+      opacity: 0; transition: opacity .8s ease; pointer-events: none; white-space: nowrap;
+    }
+    #hint.show { opacity: 1; }
+    #repeat {
+      position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 14px;
+      padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(255,79,216,.5);
+      background: rgba(20,10,28,.55); color: #ffd9f6; font-size: 13px; font-weight: 600;
+      box-shadow: var(--glow); backdrop-filter: blur(6px); opacity: 0; transform: translateY(-6px);
+      transition: opacity .6s ease, transform .6s ease; pointer-events: none;
+    }
+    #repeat.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    #repeat:active { transform: scale(.97); }
+    .stars { position:absolute; inset:0; pointer-events:none; background-image:
+      radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1.5px 1.5px at 70% 20%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.35), transparent),
+      radial-gradient(2px 2px at 85% 70%, rgba(255,142,232,.45), transparent),
+      radial-gradient(1px 1px at 55% 55%, rgba(255,255,255,.3), transparent);
+      opacity:.7; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="stars"></div>
+    <div id="tulip-stage"><canvas id="tulip"></canvas></div>
+    <div id="heart-stage"><div id="three"></div></div>
+    <button id="repeat" aria-label="Repetir">↺ Repetir</button>
+    <div id="hint">Girá y hacé zoom para leer cada palabra</div>
+  </div>
+
+  <script type="importmap">
+    { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                   "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const PHRASES = [
+      ['Español','Te amo'],['Inglés','I love you'],['Francés','Je t’aime'],['Italiano','Ti amo'],['Portugués','Eu te amo'],
+      ['Alemán','Ich liebe dich'],['Neerlandés','Ik hou van je'],['Sueco','Jag älskar dig'],['Noruego','Jeg elsker deg'],['Danés','Jeg elsker dig'],
+      ['Finés','Rakastan sinua'],['Islandés','Ég elska þig'],['Polaco','Kocham cię'],['Checo','Miluji tě'],['Eslovaco','Ľúbim ťa'],
+      ['Húngaro','Szeretlek'],['Rumano','Te iubesc'],['Catalán','T’estimo'],['Gallego','Quérote'],['Euskera','Maite zaitut'],
+      ['Griego','Σ’ αγαπώ'],['Ruso','Я тебя люблю'],['Ucraniano','Я тебе кохаю'],['Búlgaro','Обичам те'],['Serbio','Волим те'],
+      ['Croata','Volim te'],['Esloveno','Ljubim te'],['Macedonio','Те сакам'],['Albanés','Të dua'],['Lituano','Myliu tave'],
+      ['Letón','Es tevi mīlu'],['Estonio','Ma armastan sind'],['Turco','Seni seviyorum'],['Árabe','أحبك'],['Hebreo','אני אוהב אותך'],
+      ['Persa','دوستت دارم'],['Hindi','मैं तुमसे प्यार करता हूँ'],['Bengalí','আমি তোমাকে ভালোবাসি'],['Urdu','میں تم سے محبت کرتا ہوں'],['Punyabí','ਮੈਂ ਤੈਨੂੰ ਪਿਆਰ ਕਰਦਾ ਹਾਂ'],
+      ['Tamil','நான் உன்னை காதலிக்கிறேன்'],['Telugu','నేను నిన్ను ప్రేమిస్తున్నాను'],['Maratí','मी तुझ्यावर प्रेम करतो'],['Gujarati','હું તને પ્રેમ કરું છું'],['Canarés','ನಾನು ನಿನ್ನನ್ನು ಪ್ರೀತಿಸುತ್ತೇನೆ'],
+      ['Malayalam','ഞാൻ നിന്നെ സ്നേഹിക്കുന്നു'],['Chino','我爱你'],['Japonés','愛してる'],['Coreano','사랑해'],['Tailandés','ฉันรักคุณ'],
+      ['Vietnamita','Anh yêu em'],['Indonesio','Aku cinta kamu'],['Malayo','Saya cintakan awak'],['Filipino','Mahal kita'],['Javanés','Aku tresna sampeyan'],
+      ['Suajili','Nakupenda'],['Zulú','Ngiyakuthanda'],['Xhosa','Ndiyakuthanda'],['Afrikáans','Ek het jou lief'],['Amárico','እወድሃለሁ'],
+      ['Hausa','Ina son ki'],['Yoruba','Mo nifẹ rẹ'],['Igbo','A hụrụ m gị n’anya'],['Somalí','Waan ku jeclahay'],['Malagasy','Tiako ianao'],
+      ['Maltés','Inħobbok'],['Irlandés','Tá grá agam duit'],['Gaélico escocés','Tha gaol agam ort'],['Galés','Rwy’n dy garu di'],['Bretón','Da garout a ran'],
+      ['Latín','Te amo'],['Esperanto','Mi amas vin'],['Georgiano','მიყვარხარ'],['Armenio','Ես քեզ սիրում եմ'],['Azerí','Mən səni sevirəm'],
+      ['Kazajo','Мен сені жақсы көремін'],['Uzbeko','Men seni sevaman'],['Tayiko','Ман туро дӯст медорам'],['Kirguís','Мен сени сүйөм'],['Turcomano','Men seni söýýärin'],
+      ['Mongol','Би чамд хайртай'],['Nepalí','म तिमीलाई माया गर्छु'],['Cingalés','මම ඔයාට ආදරෙයි'],['Birmano','မင်းကိုချစ်တယ်'],['Jemer','ខ្ញុំស្រឡាញ់អ្នក'],
+      ['Lao','ຂ້ອຍຮັກເຈົ້າ'],['Pastún','زه تا سره مینه لرم'],['Kurdo','Ez te hez dikim'],['Yidis','איך האָב דיך ליב'],['Luxemburgués','Ech hunn dech gär'],
+      ['Frisón','Ik hâld fan dy'],['Bosnio','Volim te'],['Maorí','Aroha ahau ki a koe'],['Hawaiano','Aloha au iā ʻoe'],['Samoano','Ou te alofa ia te oe'],
+      ['Tahitiano','Ua here au ia oe'],['Quechua','Kuyayki'],['Aimara','Munsmawa'],['Guaraní','Rohayhu'],['Mapuche','Poyeyen'],
+      ['Tagalo','Mahal kita'],['Sesoto','Kea u rata'],['Tswana','Ke a go rata'],['Shona','Ndinokuda'],['Kinyarwanda','Ndagukunda']
+    ]; // 100
+
+    // ---------- TULIP STAGE ----------
+    const tulipCanvas = document.getElementById('tulip');
+    const tctx = tulipCanvas.getContext('2d');
+    const tulipStage = document.getElementById('tulip-stage');
+    const heartStage = document.getElementById('heart-stage');
+    const hint = document.getElementById('hint');
+    const repeatBtn = document.getElementById('repeat');
+
+    let W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2);
+    let startTime=0, animId, particles=[], transitioning=false, heartBuilt=false;
+    let renderer, scene, camera, controls, group, autoSpin=0;
+
+    function resizeTulip(){
+      W = window.innerWidth; H = window.innerHeight; dpr = Math.min(window.devicePixelRatio||1,2);
+      tulipCanvas.width = Math.floor(W*dpr); tulipCanvas.height = Math.floor(H*dpr);
+      tctx.setTransform(dpr,0,0,dpr,0,0);
+      if(renderer){ renderer.setSize(W,H,false); camera.aspect=W/H; camera.updateProjectionMatrix(); }
+    }
+    window.addEventListener('resize', resizeTulip, {passive:true});
+
+    function drawTulip(t){
+      tctx.clearRect(0,0,W,H);
+      const cx=W/2, baseY=H*0.78, sway=Math.sin(t*0.0012)*6;
+      const scale=Math.min(W,H)/520;
+      tctx.save();
+      tctx.translate(cx, baseY);
+      tctx.rotate(sway*Math.PI/180*0.6);
+
+      // stem
+      const stemH=220*scale;
+      const gradStem=tctx.createLinearGradient(0,0,0,-stemH);
+      gradStem.addColorStop(0,'#1f7a4a'); gradStem.addColorStop(1,'#46d17f');
+      tctx.strokeStyle=gradStem; tctx.lineWidth=10*scale; tctx.lineCap='round';
+      tctx.beginPath();
+      tctx.moveTo(0,0);
+      tctx.quadraticCurveTo(18*scale,-stemH*0.45,-6*scale,-stemH);
+      tctx.stroke();
+
+      // leaf
+      function leaf(side){
+        tctx.save(); tctx.translate(0,-stemH*0.35); tctx.scale(side,1);
+        const g=tctx.createLinearGradient(0,0,120*scale,-40*scale);
+        g.addColorStop(0,'#2aa35f'); g.addColorStop(1,'#7dffb2');
+        tctx.fillStyle=g; tctx.shadowColor='rgba(80,255,160,.25)'; tctx.shadowBlur=18*scale;
+        tctx.beginPath();
+        tctx.moveTo(0,0);
+        tctx.quadraticCurveTo(70*scale,-10*scale,120*scale,-70*scale);
+        tctx.quadraticCurveTo(55*scale,-20*scale,0,10*scale);
+        tctx.fill(); tctx.restore();
+      }
+      leaf(1); leaf(-0.9);
+
+      // petals
+      const py=-stemH, bloom=1+Math.sin(t*0.002)*0.03;
+      tctx.translate(0,py);
+      tctx.scale(bloom,bloom);
+      const petal=(ang,rx,ry,rot,color1,color2)=>{
+        tctx.save(); tctx.rotate(ang+rot);
+        const g=tctx.createRadialGradient(0,-ry*0.2,ry*0.1,0,0,ry);
+        g.addColorStop(0,color1); g.addColorStop(1,color2);
+        tctx.fillStyle=g; tctx.shadowColor='rgba(255,90,150,.35)'; tctx.shadowBlur=22*scale;
+        tctx.beginPath();
+        tctx.moveTo(0,0);
+        tctx.bezierCurveTo(rx, -ry*0.2, rx*0.9, -ry, 0, -ry*1.15);
+        tctx.bezierCurveTo(-rx*0.9, -ry, -rx, -ry*0.2, 0, 0);
+        tctx.fill(); tctx.restore();
+      };
+      const r1='#ff6fae', r2='#d81b60', r3='#ff9ecb', r4='#ff4f8b';
+      petal(0,55*scale,95*scale,0,r3,r2);
+      petal(-0.55,50*scale,90*scale,0,r1,r2);
+      petal(0.55,50*scale,90*scale,0,r1,r2);
+      petal(-0.2,42*scale,80*scale,0,r4,r2);
+      petal(0.2,42*scale,80*scale,0,r4,r2);
+      // glow center
+      const glow=tctx.createRadialGradient(0,-40*scale,5*scale,0,-40*scale,60*scale);
+      glow.addColorStop(0,'rgba(255,220,240,.7)'); glow.addColorStop(1,'rgba(255,120,180,0)');
+      tctx.fillStyle=glow; tctx.beginPath(); tctx.arc(0,-40*scale,55*scale,0,Math.PI*2); tctx.fill();
+
+      tctx.restore();
+
+      // ground glow
+      const gg=tctx.createRadialGradient(cx,H*0.82,10*scale,cx,H*0.82,140*scale);
+      gg.addColorStop(0,'rgba(255,79,216,.18)'); gg.addColorStop(1,'rgba(255,79,216,0)');
+      tctx.fillStyle=gg; tctx.beginPath(); tctx.ellipse(cx,H*0.83,140*scale,30*scale,0,0,Math.PI*2); tctx.fill();
+    }
+
+    function spawnParticlesFromTulip(){
+      const cx=W/2, cy=H*0.45;
+      particles=[];
+      const count = Math.min(260, Math.floor((W*H)/5000));
+      for(let i=0;i<count;i++){
+        const ang=Math.random()*Math.PI*2, rad=Math.random()*Math.min(W,H)*0.18;
+        particles.push({
+          x: cx + Math.cos(ang)*rad + (Math.random()-0.5)*40,
+          y: cy + Math.sin(ang)*rad*0.9 + (Math.random()-0.5)*40,
+          vx:(Math.random()-0.5)*1.2, vy:(Math.random()-0.8)*1.2,
+          tx:0, ty:0, a:1, s:1+Math.random()*2.2,
+          hue: 300 + Math.random()*30
+        });
+      }
+      // targets roughly heart shape in 2D for transition
+      for(let i=0;i<particles.length;i++){
+        const tt=i/particles.length*Math.PI*2;
+        const x=16*Math.pow(Math.sin(tt),3);
+        const y=13*Math.cos(tt)-5*Math.cos(2*tt)-2*Math.cos(3*tt)-Math.cos(4*tt);
+        particles[i].tx = cx + x * Math.min(W,H)*0.018;
+        particles[i].ty = cy + 10 - y * Math.min(W,H)*0.018;
+      }
+    }
+
+    function drawTransition(p){
+      tctx.clearRect(0,0,W,H);
+      for(const pt of particles){
+        pt.x += (pt.tx-pt.x)*0.06 + pt.vx*0.2;
+        pt.y += (pt.ty-pt.y)*0.06 + pt.vy*0.2;
+        pt.a *= 0.992;
+        tctx.beginPath();
+        tctx.fillStyle=`hsla(${pt.hue},100%,70%,${0.25 + p*0.55})`;
+        tctx.shadowColor=`hsla(${pt.hue},100%,65%,.9)`; tctx.shadowBlur=12;
+        tctx.arc(pt.x,pt.y,pt.s,0,Math.PI*2); tctx.fill();
+      }
+      tctx.shadowBlur=0;
+    }
+
+    function makeTextSprite(text){
+      const pad=24, fontSize=48;
+      const c=document.createElement('canvas'); const ctx=c.getContext('2d');
+      ctx.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, sans-serif`;
+      const w=Math.ceil(ctx.measureText(text).width)+pad*2;
+      const h=fontSize+pad*2;
+      c.width=w; c.height=h;
+      const ctx2=c.getContext('2d');
+      ctx2.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, sans-serif`;
+      ctx2.textAlign='center'; ctx2.textBaseline='middle';
+      ctx2.shadowColor='rgba(255,79,216,0.95)';
+      ctx2.shadowBlur=18;
+      ctx2.fillStyle='#ffd6f4';
+      ctx2.fillText(text,w/2,h/2);
+      ctx2.shadowBlur=6; ctx2.fillStyle='#fff'; ctx2.fillText(text,w/2,h/2);
+      const tex=new THREE.CanvasTexture(c);
+      tex.colorSpace=THREE.SRGBColorSpace;
+      tex.minFilter=THREE.LinearFilter;
+      const mat=new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending});
+      const sprite=new THREE.Sprite(mat);
+      const scale=0.012; // world units per px approx
+      sprite.scale.set(w*scale, h*scale, 1);
+      sprite.userData.baseScale = sprite.scale.clone();
+      return sprite;
+    }
+
+    function heartPoint(t,u){
+      // param-like heart surface distribution
+      const x=16*Math.pow(Math.sin(t),3);
+      const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
+      // give thickness
+      const z = (u-0.5)*6 * (1 - Math.abs(Math.sin(t))*0.3);
+      return new THREE.Vector3(x*0.12, y*0.12, z*0.12);
+    }
+
+    function initHeart(){
+      if(heartBuilt) return; heartBuilt=true;
+      const container=document.getElementById('three');
+      renderer=new THREE.WebGLRenderer({antialias:true, alpha:true, powerPreference:'high-performance'});
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+      renderer.setSize(W,H);
+      container.appendChild(renderer.domElement);
+      scene=new THREE.Scene();
+      camera=new THREE.PerspectiveCamera(50, W/H, 0.1, 100);
+      camera.position.set(0,0,7.5);
+      controls=new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping=true; controls.dampingFactor=0.06;
+      controls.enablePan=false; controls.minDistance=3.2; controls.maxDistance=14;
+      controls.rotateSpeed=0.7; controls.zoomSpeed=0.9;
+
+      group=new THREE.Group();
+      scene.add(group);
+
+      // core glow points
+      const coreGeo=new THREE.BufferGeometry();
+      const coreCount=500;
+      const pos=new Float32Array(coreCount*3);
+      for(let i=0;i<coreCount;i++){
+        const t=Math.random()*Math.PI*2, u=Math.random();
+        const p=heartPoint(t,u); p.multiplyScalar(0.85 + Math.random()*0.25);
+        pos[i*3]=p.x; pos[i*3+1]=p.y; pos[i*3+2]=p.z;
+      }
+      coreGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+      const coreMat=new THREE.PointsMaterial({color:0xff4fd8, size:0.045, transparent:true, opacity:0.9, blending:THREE.AdditiveBlending, depthWrite:false});
+      const core=new THREE.Points(coreGeo,coreMat);
+      group.add(core);
+
+      // words
+      PHRASES.forEach(([,phrase],i)=>{
+        const sprite=makeTextSprite(phrase);
+        const t=(i/PHRASES.length)*Math.PI*2;
+        const u=(i*0.6180339887)%1; // golden ratio spread
+        const p=heartPoint(t,u);
+        // push to surface-ish
+        const s=1.05 + (i%3)*0.04;
+        sprite.position.set(p.x*s, p.y*s, p.z);
+        // slight scale variation
+        const k=0.85 + ((i%5)*0.06);
+        sprite.scale.multiplyScalar(k);
+        sprite.userData.baseScale=sprite.scale.clone();
+        group.add(sprite);
+      });
+
+      const light=new THREE.PointLight(0xff4fd8, 1.2, 30); light.position.set(0,2,6); scene.add(light);
+      scene.add(new THREE.AmbientLight(0xffffff,0.25));
+
+      // adapt word scale on distance for readability
+      function adapt(){
+        const d=camera.position.distanceTo(controls.target);
+        const factor = THREE.MathUtils.clamp(1.1 - (d-5)*0.06, 0.55, 1.25);
+        group.children.forEach(ch=>{ if(ch.isSprite && ch.userData.baseScale) ch.scale.copy(ch.userData.baseScale).multiplyScalar(factor); });
+      }
+      controls.addEventListener('change', adapt); adapt();
+
+      animateHeart();
+    }
+
+    function animateHeart(){
+      requestAnimationFrame(animateHeart);
+      if(!renderer) return;
+      autoSpin += 0.0015;
+      if(group) group.rotation.y = Math.sin(autoSpin)*0.25 + autoSpin*0.15;
+      controls.update();
+      renderer.render(scene,camera);
+    }
+
+    let transitionStart=0;
+    function runSequence(){
+      transitioning=false; particles=[]; heartStage.classList.remove('show'); tulipStage.classList.remove('fade');
+      hint.classList.remove('show'); repeatBtn.classList.remove('show');
+      cancelAnimationFrame(animId);
+      startTime=performance.now();
+      const tulipDuration=4200, transDuration=1600;
+      function frame(now){
+        const elapsed=now-startTime;
+        if(elapsed < tulipDuration){
+          drawTulip(elapsed);
+        } else if(!transitioning){
+          transitioning=true; transitionStart=now; spawnParticlesFromTulip();
+        }
+        if(transitioning){
+          const p=Math.min(1,(now-transitionStart)/transDuration);
+          drawTransition(p);
+          tulipStage.classList.add('fade');
+          if(p>=1){
+            heartStage.classList.add('show');
+            initHeart();
+            setTimeout(()=>hint.classList.add('show'), 400);
+            setTimeout(()=>repeatBtn.classList.add('show'), 800);
+            return; // stop 2d loop, 3d has its own
+          }
+        }
+        animId=requestAnimationFrame(frame);
+      }
+      animId=requestAnimationFrame(frame);
+    }
+
+    repeatBtn.addEventListener('click', ()=>{
+      if(renderer){ // reset camera a bit
+        camera.position.set(0,0,7.5); controls.target.set(0,0,0); controls.update();
+      }
+      runSequence();
+    });
+
+    resizeTulip();
+    runSequence();
+  </script>
+</body>
+</html>
