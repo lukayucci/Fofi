@@ -183,16 +183,17 @@
     function heartVolumePoints(target, minDist){
       const pts=[];
       const scale = 0.105;
+      const center = new THREE.Vector3(0, 0.12, 0);
       let attempts=0, seed=0;
-      while(pts.length < target && attempts < target*500){
+      while(pts.length < target && attempts < target*600){
         attempts++; seed++;
         // param around contour for clear shape, mix shell and filled layers including center
         const t = (seed * 0.6180339887 % 1) * Math.PI * 2;
         const r = Math.random();
         let s;
         if(r < 0.45) s = 0.90 + Math.random()*0.10;      // strong outer shell -> clear lobes
-        else if(r < 0.75) s = 0.60 + Math.random()*0.28; // middle
-        else s = 0.18 + Math.random()*0.38;              // inner fill to avoid empty center
+        else if(r < 0.78) s = 0.58 + Math.random()*0.30; // middle
+        else s = 0.28 + Math.random()*0.28;              // inner fill
         const p2 = heartPoint2D(t);
         const x = p2.x * s;
         const y = p2.y * s;
@@ -200,8 +201,8 @@
         const zMax = 5.4 * (0.25 + 0.75*(1 - Math.pow(s,1.15)));
         const z = (Math.random()*2 - 1) * zMax;
         const p = new THREE.Vector3(x*scale, y*scale + 0.12, z*0.085);
-        // keep small clear area for center phrase
-        if(p.length() < 0.22) continue;
+        // keep clear area around center phrase so it stands out
+        if(p.distanceTo(center) < 0.62) continue;
         let ok=true;
         for(let i=0;i<pts.length;i++){
           if(p.distanceToSquared(pts[i]) < minDist*minDist){ ok=false; break; }
@@ -211,9 +212,10 @@
       return pts;
     }
 
-    function makeTextSprite(text){
-      const fontSize=26;
-      const pad=8;
+    function makeTextSprite(text, opts={}){
+      const fontSize = opts.fontSize || 26;
+      const pad = opts.pad || 8;
+      const fill = opts.fill || '#ff7ab8';
       const c=document.createElement('canvas'); const ctx=c.getContext('2d');
       ctx.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
       const w=Math.ceil(ctx.measureText(text).width)+pad*2;
@@ -222,17 +224,16 @@
       const ctx2=c.getContext('2d');
       ctx2.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
       ctx2.textAlign='center'; ctx2.textBaseline='middle';
-      // nice pink text, no glow
-      ctx2.fillStyle='#ff7ab8';
+      ctx2.fillStyle=fill;
       ctx2.fillText(text,w/2,h/2);
       const tex=new THREE.CanvasTexture(c);
       tex.colorSpace=THREE.SRGBColorSpace;
       tex.minFilter=THREE.LinearFilter;
       tex.generateMipmaps=false;
       const mat=new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false, depthTest:true});
-      mat.color = new THREE.Color('#ff5fae');
+      mat.color = new THREE.Color(opts.color || '#ff5fae');
       const sprite=new THREE.Sprite(mat);
-      const scale=0.0035;
+      const scale=opts.scale || 0.0035;
       sprite.scale.set(w*scale, h*scale, 1);
       sprite.userData.baseScale=sprite.scale.clone();
       return sprite;
@@ -275,10 +276,10 @@
         group.add(sprite);
       }
 
-      // center phrase
-      const center = makeTextSprite('Te Amo Fofi');
+      // center phrase - highlighted
+      const center = makeTextSprite('Te Amo Fofi', {fontSize: 34, pad: 12, fill: '#ffffff', color: '#ff4fa8', scale: 0.0042});
       center.position.set(0, 0.12, 0);
-      center.scale.multiplyScalar(1.35);
+      center.scale.multiplyScalar(1.25);
       center.userData.baseScale = center.scale.clone();
       center.userData.isCenter = true;
       group.add(center);
@@ -312,13 +313,15 @@
       const hi = new THREE.Color('#ffffff');
       group.children.forEach(ch=>{
         if(!ch.isSprite) return;
+        const isCenter = ch.userData.isCenter;
+        const baseC = isCenter ? new THREE.Color('#ff4fa8') : base;
         const dist = Math.abs(ch.position.y - bandY);
         if(dist < bandHalf){
           const k = 1 - dist/bandHalf;
           const w = Math.pow(k, 1.7);
-          ch.material.color.copy(base).lerp(hi, 0.85*w);
+          ch.material.color.copy(baseC).lerp(hi, isCenter ? 0.95*w : 0.85*w);
         } else {
-          ch.material.color.copy(base);
+          ch.material.color.copy(baseC);
         }
       });
 
