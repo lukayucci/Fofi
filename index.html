@@ -166,32 +166,55 @@
       tctx.shadowBlur=0;
     }
 
-    function insideHeart3D(x,y,z){
-      // Heart implicit equation with two clear lobes
-      const a = x*x + (9/4)*z*z + y*y - 1;
-      return (a*a*a - x*x*y*y*y - (9/80)*z*z*y*y*y) <= 0;
+    function heartPoint2D(t){
+      const x = 16 * Math.pow(Math.sin(t),3);
+      const y = 13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t);
+      return {x, y};
     }
 
-    function heartVolumePoints(count){
+    function insideHeart2D(x,y){
+      // normalized check using implicit form aligned to 2D curve bounds
+      const nx = x/16;
+      const ny = y/17;
+      const a = nx*nx + ny*ny - 1;
+      return (a*a*a - nx*nx*ny*ny*ny) <= 0;
+    }
+
+    function heartVolumePoints(target, minDist){
       const pts=[];
-      let attempts=0;
-      while(pts.length < count && attempts < count*260){
-        attempts++;
-        // bounding box for the heart shape
-        const x=(Math.random()*2.6-1.3);
-        const y=(Math.random()*2.8-1.35);
-        const z=(Math.random()*2.0-1.0);
-        if(insideHeart3D(x,y,z)){
-          // scale and lift slightly to center nicely
-          pts.push(new THREE.Vector3(x*1.45, y*1.45 + 0.12, z*1.45));
+      const scale = 0.105;
+      let attempts=0, seed=0;
+      while(pts.length < target && attempts < target*400){
+        attempts++; seed++;
+        // param around contour for clear shape, mix shell and filled layers
+        const t = (seed * 0.6180339887 % 1) * Math.PI * 2;
+        const r = Math.random();
+        let s;
+        if(r < 0.55) s = 0.92 + Math.random()*0.08;      // strong outer shell -> clear lobes
+        else if(r < 0.88) s = 0.68 + Math.random()*0.22; // middle
+        else s = 0.48 + Math.random()*0.18;              // inner, not center
+        const p2 = heartPoint2D(t);
+        const x = p2.x * s;
+        const y = p2.y * s;
+        // thickness varies, thinner at edges for definition
+        const zMax = 5.2 * (0.25 + 0.75*(1 - Math.pow(s,1.2)));
+        const z = (Math.random()*2 - 1) * zMax;
+        // avoid crowded center
+        const radial = Math.sqrt((x*x + y*y) / (16*16 + 17*17));
+        if(radial < 0.22) continue;
+        const p = new THREE.Vector3(x*scale, y*scale + 0.12, z*0.085);
+        let ok=true;
+        for(let i=0;i<pts.length;i++){
+          if(p.distanceToSquared(pts[i]) < minDist*minDist){ ok=false; break; }
         }
+        if(ok) pts.push(p);
       }
       return pts;
     }
 
     function makeTextSprite(text){
-      const fontSize=30;
-      const pad=10;
+      const fontSize=26;
+      const pad=8;
       const c=document.createElement('canvas'); const ctx=c.getContext('2d');
       ctx.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
       const w=Math.ceil(ctx.measureText(text).width)+pad*2;
@@ -201,16 +224,16 @@
       ctx2.font=`700 ${fontSize}px system-ui, -apple-system, Segoe UI, Noto Sans, sans-serif`;
       ctx2.textAlign='center'; ctx2.textBaseline='middle';
       // nice pink text, no glow
-      ctx2.fillStyle='#ff7fbe';
+      ctx2.fillStyle='#ff7ab8';
       ctx2.fillText(text,w/2,h/2);
       const tex=new THREE.CanvasTexture(c);
       tex.colorSpace=THREE.SRGBColorSpace;
       tex.minFilter=THREE.LinearFilter;
       tex.generateMipmaps=false;
       const mat=new THREE.SpriteMaterial({map:tex, transparent:true, depthWrite:false, depthTest:true});
-      mat.color = new THREE.Color('#ff66b3');
+      mat.color = new THREE.Color('#ff5fae');
       const sprite=new THREE.Sprite(mat);
-      const scale=0.0039;
+      const scale=0.0035;
       sprite.scale.set(w*scale, h*scale, 1);
       sprite.userData.baseScale=sprite.scale.clone();
       return sprite;
@@ -227,7 +250,7 @@
 
       scene=new THREE.Scene();
       camera=new THREE.PerspectiveCamera(45, W/H, 0.1, 100);
-      camera.position.set(0,0.05,7.8); // a bit farther so full heart shows
+      camera.position.set(0,0.05,7.6);
 
       controls=new OrbitControls(camera, renderer.domElement);
       controls.enableDamping=true; controls.dampingFactor=0.06;
@@ -242,8 +265,9 @@
       scene.add(group);
 
       const isMobile = Math.min(W,H) < 700;
-      const COUNT = isMobile ? 360 : 520;
-      const pts = heartVolumePoints(COUNT);
+      const COUNT = isMobile ? 260 : 360;
+      const minDist = isMobile ? 0.36 : 0.34;
+      const pts = heartVolumePoints(COUNT, minDist);
       for(let i=0;i<pts.length;i++){
         const phrase = PHRASES[i % PHRASES.length];
         const sprite = makeTextSprite(phrase);
@@ -256,7 +280,7 @@
 
       function adapt(){
         const d=camera.position.distanceTo(controls.target);
-        const factor = THREE.MathUtils.clamp(1.1 - (d-6.5)*0.06, 0.55, 1.45);
+        const factor = THREE.MathUtils.clamp(1.08 - (d-6.5)*0.055, 0.6, 1.4);
         group.children.forEach(ch=>{ if(ch.isSprite && ch.userData.baseScale) ch.scale.copy(ch.userData.baseScale).multiplyScalar(factor); });
       }
       controls.addEventListener('change', adapt); adapt();
@@ -268,14 +292,14 @@
     function animateHeart(now){
       requestAnimationFrame(animateHeart);
       if(!renderer || !group) return;
-      // continuous full spin around Y axis (stays upright)
-      group.rotation.y += 0.0065;
+      // slower continuous full spin around Y axis (stays upright)
+      group.rotation.y += 0.0025;
       controls.update();
 
       // white metallic light pass from top to bottom every 5s
       const t = ((now - heartStart) % 5000) / 5000;
-      const top = 2.1, bot = -1.9;
-      const bandY = top - t * (top - bot + 0.8);
+      const top = 2.0, bot = -1.8;
+      const bandY = top - t * (top - bot + 0.7);
       const bandHalf = 0.32;
       const base = new THREE.Color('#ff5fae');
       const hi = new THREE.Color('#ffffff');
